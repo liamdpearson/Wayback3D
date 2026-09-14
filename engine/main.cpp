@@ -58,10 +58,12 @@ int main()
     glfwSetCursorPosCallback(window, mouseMoveCallback);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
+    // load game config
+    loadConfig("assets/config.json");
+
     // load scene
     loadScene(startupScene.c_str());
     initScripting();
-    target_frame_duration = 0.00333;
 
     bakeSceneLighting();
     collectSceneColliders();
@@ -78,6 +80,14 @@ int main()
         std::chrono::duration<double> elapsed = currentFrameTime - lastFrameTime;
 
         double time_left = target_frame_duration - elapsed.count();
+
+        while (time_left > 0.016)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            currentFrameTime = std::chrono::high_resolution_clock::now();
+            elapsed = currentFrameTime - lastFrameTime;
+            time_left = target_frame_duration - elapsed.count();
+        }
 
         while (time_left > 0.0)
         {

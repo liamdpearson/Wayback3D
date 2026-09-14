@@ -267,3 +267,29 @@ void swapScene(const char* path)
 
     startScripts();
 }
+
+void loadConfig(const char* path)
+{
+    std::ifstream file(path);
+    if (!file)
+    {
+        std::cout << "loadScene: Could not find scene: " << path << '\n';
+        return;
+    }
+
+    try
+    {
+        json scene;
+        file >> scene;
+
+        if (scene.value("vsync", false)) glfwSwapInterval(1);
+        else glfwSwapInterval(0);
+
+        target_frame_duration = 1.0/scene.value("MAX_FPS", 60.0);
+    }
+    catch(const json::exception& e)
+    {
+        std::cout << "loadScene: " << path << ": " << e.what() << '\n';
+    }
+
+}
