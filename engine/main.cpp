@@ -1,3 +1,4 @@
+#include "audio/audio.h"
 #include "collisions/collisions.h"
 #include "graphics/graphics.h"
 #include "input/input.h"
@@ -67,6 +68,11 @@ int main()
 
     bakeSceneLighting();
     collectSceneColliders();
+    if (!initAudio())
+    {
+        std::cout << "Audio failed to init. Quitting..." << '\n';
+        return 0;
+    }
 
     for (std::unique_ptr<Object>& obj : rootObjs) obj->Upload();
     for (std::unique_ptr<UIElement>& ui : uiRoots) ui->UploadUI();
@@ -100,8 +106,6 @@ int main()
         lastFrameTime = currentFrameTime;
         deltaTime = (float)(elapsed.count());
 
-
-
         // call update fn in scripts
         updateScripts();
 
@@ -112,6 +116,9 @@ int main()
 
         if (keyHeld(GLFW_KEY_LEFT_ALT) && keyPressed(GLFW_KEY_F4))
             glfwSetWindowShouldClose(window, true);
+
+        if (keyPressed(GLFW_KEY_LEFT_ALT))
+            playSound2D("assets/sounds/test.mp3");
 
         endFrameInput();
 
@@ -138,6 +145,7 @@ int main()
         glfwPollEvents();
     }
 
+    uninitAudio();
     glfwTerminate();
     return 0;
 }

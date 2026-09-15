@@ -15,6 +15,7 @@ add_library(third_party STATIC
     third_party/glad/src/glad.c
     third_party/xatlas/xatlas.cpp
     third_party/ufbx/ufbx.c
+    third_party/miniaudio/miniaudio.c
 )
 target_include_directories(third_party SYSTEM PUBLIC
     ${CMAKE_SOURCE_DIR}/third_party
@@ -36,6 +37,7 @@ set_target_properties(glfw3 PROPERTIES
 
 # --- engine ---
 add_library(engine STATIC
+    engine/audio/audio.cpp
     engine/collisions/collisions.cpp
     engine/graphics/graphics.cpp
     engine/input/input.cpp
