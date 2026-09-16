@@ -10,12 +10,13 @@
 #include <vector>
 #include <iostream>
 #include <map>
+#include <algorithm>
 
 
 std::vector<Light> lights;
 float ambient = 0.0f;
 float lightmapResScalar = 0.01;
-std::vector<TriAABB> occluders;
+std::vector<Tri> occluders;
 LightGrid lightGrid;
 
 
@@ -39,9 +40,9 @@ static bool rayHitTri(const glm::vec3& origin, const glm::vec3& dir,
 }
 
 static bool rayOccluded(const glm::vec3& origin, const glm::vec3& dir,
-                        float maxDist, const std::vector<TriAABB>& tris)
+                        float maxDist, const std::vector<Tri>& tris)
 {
-    for (const TriAABB& t : tris)
+    for (const Tri& t : tris)
     {   
         if (rayHitTri(origin, dir, maxDist, t)) return true;
     }
@@ -115,14 +116,14 @@ std::pair<glm::vec3, glm::vec3> sampleLightAndDir(const glm::vec3& p)
 }
 
 // recursive part of the occluders walk
-void Object::CollectOccluders(const glm::mat4 parentWorld, std::vector<TriAABB>& out)
+void Object::CollectOccluders(const glm::mat4 parentWorld, std::vector<Tri>& out)
 {
     glm::mat4 world = parentWorld * transform.matrix();
     for (std::unique_ptr<Object>& child : children) child->CollectOccluders(world, out);
 }
 
 // collects occluders from the static mesh and then calls Object::CollectOccluders.
-void StaticMesh::CollectOccluders(const glm::mat4 parentWorld, std::vector<TriAABB>& out)
+void StaticMesh::CollectOccluders(const glm::mat4 parentWorld, std::vector<Tri>& out)
 {
     glm::mat4 world = parentWorld * transform.matrix();
     const std::vector<unsigned int>& indices = this->getIndices();
@@ -138,7 +139,7 @@ void StaticMesh::CollectOccluders(const glm::mat4 parentWorld, std::vector<TriAA
             tri[c] = glm::vec3(world * glm::vec4(local, 1.0f));
         }
 
-        TriAABB t{tri[0], tri[1], tri[2]};
+        Tri t{tri[0], tri[1], tri[2]};
         out.push_back(t);
        
     }
@@ -327,6 +328,36 @@ void StaticMesh::BakeLighting(const glm::mat4 parentWorld)
     Object::BakeLighting(parentWorld);
 }
 
+static glm::vec3 centroid(const Tri& tri)
+{
+    return (tri.a + tri.b + tri.c) / 3.0f;
+}
+
+static void splitBVHnode(BVHnode* node)
+{
+    float xDiff = node->aabb.max.x - node->aabb.min.x;
+    float yDiff = node->aabb.max.y - node->aabb.min.y;
+    float zDiff = node->aabb.max.z - node->aabb.min.z;
+
+    int axis = 0;
+    if (yDiff > xDiff)
+        axis = 1;
+    if (zDiff > yDiff)
+        axis = 2;
+
+    size_t mid = node->tris.size();
+
+    std::nth_element(
+        node->tris.begin(),
+        node->tris.begin() + mid,
+        node->tris.end(),
+        [axis](const Tri* a, const Tri* b) {
+            return centroid(*a)[axis] < centroid(*b)[axis];
+        }
+    );
+
+}
+
 // original bake lighting call
 void bakeSceneLighting()
 {
@@ -335,6 +366,7 @@ void bakeSceneLighting()
     occluders.clear();
     lightGrid = LightGrid{};
 
+    // collect light occluder triangles
     for (std::unique_ptr<Object>& obj : rootObjs)
         obj->CollectOccluders(glm::mat4(1.0f), occluders);
     
@@ -342,9 +374,7 @@ void bakeSceneLighting()
 
     if (occluders.size() == 0) return;
 
-    for (std::unique_ptr<Object>& obj : rootObjs)
-        obj->BakeLighting(glm::mat4(1.0f));
-
+    // set light grid dimentions
     glm::vec3& min = lightGrid.min;
     glm::vec3& max = lightGrid.max;
 
@@ -378,6 +408,22 @@ void bakeSceneLighting()
             }
         }
     }
+
+    // create the BVH nodes for fast raycasting
+    std::vector<Tri*> occluderRefs;
+    for (Tri& t : occluders)
+        occluderRefs.push_back(&t);
+
+    rootNode = BVHnode{
+        AABB{lightGrid.min, lightGrid.max},
+        nullptr, nullptr, occluderRefs
+    };
+    splitBVHnode(&rootNode);
+
+    // bake lighting
+    for (std::unique_ptr<Object>& obj : rootObjs)
+        obj->BakeLighting(glm::mat4(1.0f));
+
 
     std::cout << "bake took " << (glfwGetTime() - start) << "s\n";
 }

@@ -91,6 +91,14 @@ struct LightGrid
     glm::vec3 min{INFINITY}, max{-INFINITY};
 };
 
+struct BVHnode
+{
+    AABB aabb;
+    std::unique_ptr<BVHnode> left;
+    std::unique_ptr<BVHnode> right;
+    std::vector<Tri*> tris;
+};
+
 // all vectors are of the same length bone owns each at its index
 struct Skeleton
 {
@@ -179,7 +187,7 @@ class Object
         virtual void ComputePose();
         virtual Rig* GetRig() { return nullptr; }
         virtual void Draw();
-        virtual void CollectOccluders(const glm::mat4 parentWorld, std::vector<TriAABB>& out);
+        virtual void CollectOccluders(const glm::mat4 parentWorld, std::vector<Tri>& out);
         virtual void CollectColliders(const glm::mat4 parentWorld, std::vector<TriAABB>& out);
         virtual void BakeLighting(const glm::mat4 parentWorld);
 
@@ -258,7 +266,7 @@ class StaticMesh : public Mesh
         StaticMesh() = default;
 
         void Draw() override;
-        void CollectOccluders(const glm::mat4 parentWorld, std::vector<TriAABB>& out);
+        void CollectOccluders(const glm::mat4 parentWorld, std::vector<Tri>& out);
         void CollectColliders(const glm::mat4 parentWorld, std::vector<TriAABB>& out);
         void BakeLighting(const glm::mat4 parentWorld);
 
@@ -377,7 +385,8 @@ extern std::string pendingScene;
 extern std::vector<Light> lights;
 extern float ambient;
 extern float lightmapResScalar;
-extern std::vector<TriAABB> occluders;
+extern std::vector<Tri> occluders;
+extern BVHnode rootNode;
 extern LightGrid lightGrid;
 
 // for finding the bounds box of the scene for light grid
