@@ -17,6 +17,7 @@ std::vector<Light> lights;
 float ambient = 0.0f;
 float lightmapResScalar = 0.01;
 std::vector<Tri> occluders;
+BVHnode rootNode;
 LightGrid lightGrid;
 
 
@@ -39,12 +40,72 @@ static bool rayHitTri(const glm::vec3& origin, const glm::vec3& dir,
     return dist > 0.0001 && dist < maxDist;
 }
 
+static bool rayHitAABB(const glm::vec3& origin, const glm::vec3& dir,
+                       float maxDist, const AABB& aabb)
+{  
+    float t1x;
+    float t2x;
+
+    // make sure no div by 0
+    if (dir.x == 0) {
+        // if x dir is 0 and origin.x isnt inside the aabb's x bounds it wont hit
+        if (!(origin.x >= aabb.min.x && origin.x <= aabb.max.x)) return false;
+        t1x = -INFINITY;
+        t2x = INFINITY;
+    } else {
+        t1x = (aabb.min.x - origin.x) / dir.x;
+        t2x = (aabb.max.x - origin.x) / dir.x;
+        if (t1x > t2x) std::swap(t1x, t2x);
+    }
+    
+    float t1y;
+    float t2y;
+
+    // make sure no div by 0
+    if (dir.y == 0) {
+        // if y dir is 0 and origin.y isnt inside the aabb's y bounds it wont hit
+        if (!(origin.y >= aabb.min.y && origin.y <= aabb.max.y)) return false;
+        t1y = -INFINITY;
+        t2y = INFINITY;
+    } else {
+        t1y = (aabb.min.y - origin.y) / dir.y;
+        t2y = (aabb.max.y - origin.y) / dir.y;
+        if (t1y > t2y) std::swap(t1y, t2y);
+    }
+
+    float t1z;
+    float t2z;
+
+    // make sure no div by 0
+    if (dir.z == 0) {
+        // if z dir is 0 and origin.z isnt inside the aabb's z bounds it wont hit
+        if (!(origin.z >= aabb.min.z && origin.z <= aabb.max.z)) return false;
+        t1z = -INFINITY;
+        t2z = INFINITY;
+    } else {
+        t1z = (aabb.min.z - origin.z) / dir.z;
+        t2z = (aabb.max.z - origin.z) / dir.z;
+        if (t1z > t2z) std::swap(t1z, t2z);
+    }
+    float t1Max = std::max({t1x, t1y, t1z});
+    float t2Min = std::min({t2x, t2y, t2z});
+
+    return (t1Max <= t2Min) &&
+            t2Min >= 0.0f &&
+            t1Max <= maxDist;
+}
+
 static bool rayOccluded(const glm::vec3& origin, const glm::vec3& dir,
-                        float maxDist, const std::vector<Tri>& tris)
+                        float maxDist, const BVHnode& node)
 {
-    for (const Tri& t : tris)
-    {   
-        if (rayHitTri(origin, dir, maxDist, t)) return true;
+    if (!rayHitAABB(origin, dir, maxDist, node.aabb)) return false;
+    if (node.isLeaf) {
+        for (Tri* t : node.tris) {
+            if (rayHitTri(origin, dir, maxDist, *t)) return true;
+        }
+    } else {
+        return rayOccluded(origin, dir, maxDist, *(node.left.get())) ||
+               rayOccluded(origin, dir, maxDist, *(node.right.get()));
     }
     return false;
 }
@@ -60,7 +121,7 @@ glm::vec3 sampleLightAt(const glm::vec3& p)
         if (dist > light.radius) continue;
         glm::vec3 dir = glm::normalize(toLight);
 
-        if (rayOccluded(p, dir, dist, occluders)) continue;
+        if (rayOccluded(p, dir, dist, rootNode)) continue;
         
         float a = 1/(1+(dist/light.falloff)*(dist/light.falloff));
         float b = 1/(1+(light.radius/light.falloff)*(light.radius/light.falloff));
@@ -90,7 +151,7 @@ std::pair<glm::vec3, glm::vec3> sampleLightAndDir(const glm::vec3& p)
         if (dist > light.radius) continue;
         glm::vec3 d = glm::normalize(toLight);
 
-        if (rayOccluded(p, d, dist, occluders)) continue;
+        if (rayOccluded(p, d, dist, rootNode)) continue;
         
         float a = 1/(1+(dist/light.falloff)*(dist/light.falloff));
         float b = 1/(1+(light.radius/light.falloff)*(light.radius/light.falloff));
@@ -254,7 +315,7 @@ void StaticMesh::BakeLighting(const glm::mat4 parentWorld)
                     if (lambert <= 0) continue;
 
                     glm::vec3 origin = worldPos + worldNorm * 1e-3f; // shadow bias
-                    if (rayOccluded(origin, dir, dist, occluders)) continue;
+                    if (rayOccluded(origin, dir, dist, rootNode)) continue;
                     
                     float a = 1/(1+(dist/light.falloff)*(dist/light.falloff));
                     float b = 1/(1+(light.radius/light.falloff)*(light.radius/light.falloff));
@@ -335,6 +396,11 @@ static glm::vec3 centroid(const Tri& tri)
 
 static void splitBVHnode(BVHnode* node)
 {
+    if (node->tris.size() < 5) {
+        node->isLeaf = true;
+        return;
+    }
+
     float xDiff = node->aabb.max.x - node->aabb.min.x;
     float yDiff = node->aabb.max.y - node->aabb.min.y;
     float zDiff = node->aabb.max.z - node->aabb.min.z;
@@ -345,7 +411,7 @@ static void splitBVHnode(BVHnode* node)
     if (zDiff > yDiff)
         axis = 2;
 
-    size_t mid = node->tris.size();
+    size_t mid = node->tris.size() / 2;
 
     std::nth_element(
         node->tris.begin(),
@@ -355,6 +421,47 @@ static void splitBVHnode(BVHnode* node)
             return centroid(*a)[axis] < centroid(*b)[axis];
         }
     );
+
+    std::vector<Tri*> leftTris(node->tris.begin(), node->tris.begin() + mid);
+    AABB leftAABB{glm::vec3{INFINITY}, glm::vec3{-INFINITY}};
+
+    for (Tri* t : leftTris)
+    {
+        leftAABB.min = glm::min(t->a, leftAABB.min);
+        leftAABB.min = glm::min(t->b, leftAABB.min);
+        leftAABB.min = glm::min(t->c, leftAABB.min);
+
+        leftAABB.max = glm::max(t->a, leftAABB.max);
+        leftAABB.max = glm::max(t->b, leftAABB.max);
+        leftAABB.max = glm::max(t->c, leftAABB.max);
+    }
+
+    auto left = std::make_unique<BVHnode>(BVHnode{
+        leftAABB, nullptr, nullptr, leftTris, false
+    });
+    node->left = std::move(left);
+
+    std::vector<Tri*> rightTris(node->tris.begin() + mid, node->tris.end());
+    AABB rightAABB{glm::vec3{INFINITY}, glm::vec3{-INFINITY}};
+
+    for (Tri* t : rightTris)
+    {
+        rightAABB.min = glm::min(t->a, rightAABB.min);
+        rightAABB.min = glm::min(t->b, rightAABB.min);
+        rightAABB.min = glm::min(t->c, rightAABB.min);
+
+        rightAABB.max = glm::max(t->a, rightAABB.max);
+        rightAABB.max = glm::max(t->b, rightAABB.max);
+        rightAABB.max = glm::max(t->c, rightAABB.max);
+    }
+
+    auto right = std::make_unique<BVHnode>(BVHnode{
+        rightAABB, nullptr, nullptr, rightTris, false
+    });
+    node->right = std::move(right);
+
+    splitBVHnode(node->left.get());
+    splitBVHnode(node->right.get());
 
 }
 
@@ -392,6 +499,19 @@ void bakeSceneLighting()
     min.x = floor(min.x) - 1; min.y = floor(min.y) - 1; min.z = floor(min.z) - 1;
     max.x = floor(max.x) + 2; max.y = floor(max.y) + 2; max.z = floor(max.z) + 2;
 
+    // create the BVH nodes for fast raycasting
+    std::vector<Tri*> occluderRefs;
+    for (Tri& t : occluders)
+        occluderRefs.push_back(&t);
+
+    rootNode = BVHnode{
+        AABB{lightGrid.min, lightGrid.max},
+        nullptr, nullptr,
+        occluderRefs,
+        false
+    };
+    splitBVHnode(&rootNode);
+
     std::cout << "Light Grid Dimensions(-X X -Y Y -Z Z):\n";
     std::cout << min.x << ' ' << min.y << ' ' << min.z << ' ' 
               << max.x << ' ' << max.y << ' ' << max.z << '\n';
@@ -408,17 +528,6 @@ void bakeSceneLighting()
             }
         }
     }
-
-    // create the BVH nodes for fast raycasting
-    std::vector<Tri*> occluderRefs;
-    for (Tri& t : occluders)
-        occluderRefs.push_back(&t);
-
-    rootNode = BVHnode{
-        AABB{lightGrid.min, lightGrid.max},
-        nullptr, nullptr, occluderRefs
-    };
-    splitBVHnode(&rootNode);
 
     // bake lighting
     for (std::unique_ptr<Object>& obj : rootObjs)
