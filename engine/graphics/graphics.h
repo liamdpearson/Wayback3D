@@ -73,24 +73,6 @@ struct AABB
 
 struct TriAABB : Tri { AABB aabb; };
 
-// scene light used only in lighting bake
-struct Light
-{
-    std::string name;
-    std::string tag;
-    glm::vec3 pos;
-    glm::vec3 color;
-    float intensity;
-    float radius;
-    float falloff;
-};
-
-struct LightGrid
-{
-    std::vector<std::pair<glm::vec3, glm::vec3>> values;
-    glm::vec3 min{INFINITY}, max{-INFINITY};
-};
-
 // all vectors are of the same length bone owns each at its index
 struct Skeleton
 {
@@ -372,23 +354,6 @@ extern Camera* currentCam;
 // set scene variables
 extern std::string startupScene;
 extern std::string pendingScene;
-
-// lighting stuff
-extern std::vector<Light> lights;
-extern float ambient;
-extern float lightmapResScalar;
-extern LightGrid lightGrid;
-
-// for finding the bounds box of the scene for light grid
-extern float minX;
-extern float maxX;
-extern float minY;
-extern float maxY;
-extern float minZ;
-extern float maxZ;
-
-// collision stuff
-extern std::vector<TriAABB> colliders;
 
 // define opengl variables
 extern GLFWwindow* window;
