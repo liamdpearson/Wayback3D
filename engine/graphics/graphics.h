@@ -19,7 +19,7 @@
 
 const int VERTEX_FLOATS = 15;
 // maximum bones because I store bone indices as a single
-// unsigned int so each bone las to be less than 8 bits.
+// unsigned int so each bone has to be less than 8 bits.
 const int MAX_BONES = 128;
 
 struct Transform
@@ -89,15 +89,6 @@ struct LightGrid
 {
     std::vector<std::pair<glm::vec3, glm::vec3>> values;
     glm::vec3 min{INFINITY}, max{-INFINITY};
-};
-
-struct BVHnode
-{
-    AABB aabb;
-    std::unique_ptr<BVHnode> left;
-    std::unique_ptr<BVHnode> right;
-    std::vector<Tri*> tris;
-    bool isLeaf = false;
 };
 
 // all vectors are of the same length bone owns each at its index
@@ -386,8 +377,6 @@ extern std::string pendingScene;
 extern std::vector<Light> lights;
 extern float ambient;
 extern float lightmapResScalar;
-extern std::vector<Tri> occluders;
-extern BVHnode rootNode;
 extern LightGrid lightGrid;
 
 // for finding the bounds box of the scene for light grid
