@@ -63,16 +63,12 @@ int main()
     loadConfig("assets/config.json");
 
     // load scene
-    loadScene(startupScene.c_str());
+    if (!loadScene(startupScene.c_str())) return 0;
     initScripting();
 
     bakeSceneLighting();
     collectSceneColliders();
-    if (!initAudio())
-    {
-        std::cout << "Audio failed to init. Quitting..." << '\n';
-        return 0;
-    }
+    if (!initAudio()) return 0;
 
     for (std::unique_ptr<Object>& obj : rootObjs) obj->Upload();
     for (std::unique_ptr<UIElement>& ui : uiRoots) ui->UploadUI();
@@ -110,7 +106,7 @@ int main()
         updateScripts();
 
         if (pendingScene != "") {
-            swapScene(pendingScene.c_str());
+            if (!swapScene(pendingScene.c_str())) return 0;
             pendingScene = "";
         }
 

@@ -183,13 +183,13 @@ static std::unique_ptr<UIElement> buildUIElement(const json& node, UIElement* pa
     return ui;
 }
 
-void loadScene(const char* path)
+int loadScene(const char* path)
 {
     std::ifstream file(path);
     if (!file)
     {
         std::cout << "loadScene: Could not find scene: " << path << '\n';
-        return;
+        return 0;
     }
 
     try
@@ -242,9 +242,11 @@ void loadScene(const char* path)
     {
         std::cout << "loadScene: " << path << ": " << e.what() << '\n';
     }
+
+    return 1;
 }
 
-void swapScene(const char* path)
+int swapScene(const char* path)
 {
     uiRoots.clear();
     resetScripting();
@@ -253,7 +255,7 @@ void swapScene(const char* path)
     ambient = 0.0f;
     lightmapResScalar = 0.01;
 
-    loadScene(path);
+    if (!loadScene(path)) return 0;
     loadScripts();
 
     // this clears occluders and light grid
@@ -266,15 +268,17 @@ void swapScene(const char* path)
     for (std::unique_ptr<UIElement>& ui : uiRoots) ui->UploadUI();
 
     startScripts();
+
+    return 1;
 }
 
-void loadConfig(const char* path)
+int loadConfig(const char* path)
 {
     std::ifstream file(path);
     if (!file)
     {
         std::cout << "loadScene: Could not find scene: " << path << '\n';
-        return;
+        return 0;
     }
 
     try
@@ -282,7 +286,9 @@ void loadConfig(const char* path)
         json scene;
         file >> scene;
 
-        if (scene.value("vsync", false)) glfwSwapInterval(1);
+        bool vsync = scene.value("vsync", false);
+        std::cout << '\n' << vsync << "\n\n";
+        if (vsync) glfwSwapInterval(1);
         else glfwSwapInterval(0);
 
         target_frame_duration = 1.0/scene.value("MAX_FPS", 60.0);
@@ -292,4 +298,5 @@ void loadConfig(const char* path)
         std::cout << "loadScene: " << path << ": " << e.what() << '\n';
     }
 
+    return 1;
 }

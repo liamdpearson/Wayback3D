@@ -4,20 +4,21 @@
 
 #include <glm/glm.hpp>
 
+
 static ma_engine engine;
 static bool initialized = false;
 
-// static glm::vec3 listener{0.0f};
+static glm::vec3 listener{0.0f};
 
-// const int MAX_VOICES = 32;
+const int MAX_VOICES = 32;
 
-// struct Voice
-// {
-//     ma_sound sound;
-//     bool active = false;
-// };
+struct Voice
+{
+    ma_sound sound;
+    bool active = false;
+};
 
-// static Voice voices[MAX_VOICES];
+static Voice voices[MAX_VOICES];
 
 int initAudio()
 {

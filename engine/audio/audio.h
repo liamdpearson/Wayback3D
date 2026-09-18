@@ -2,10 +2,10 @@
 
 #include "../graphics/graphics.h"
 
-// struct VoiceHandle
-// {
-//     int index;
-// };
+class AudioSource : public Object
+{
+    int index;
+};
 
 int initAudio();
 
