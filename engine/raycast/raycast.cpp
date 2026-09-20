@@ -96,3 +96,16 @@ bool rayOccluded(const glm::vec3& origin, const glm::vec3& dir,
     }
     return false;
 }
+
+// old raycast method for reference
+// bool rayOccluded(const glm::vec3& origin, const glm::vec3& dir,
+//                         float maxDist, const BVHnode& node)
+// {
+//     for (Tri* t : node.tris)
+//     {
+//         if (rayHitTri(origin, dir, maxDist, *t)) return true;
+//     }
+
+//     return false;
+
+// }

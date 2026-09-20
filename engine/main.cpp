@@ -125,7 +125,12 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(shaderProgram);
-        if (currentCam) configureCamera(currentCam);
+        if (currentCam) {
+            configureCamera(currentCam);
+            updateAudio(currentCam->getPos(),
+                        currentCam->getFront(),
+                        currentCam->getUp());
+        }
 
         for (std::unique_ptr<Object>& obj : rootObjs) obj->Draw();
         glBindVertexArray(0);
