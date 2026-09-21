@@ -7,6 +7,7 @@
 #include "../lighting/lighting.h"
 #include "../graphics/graphics.h"
 #include "../collisions/collisions.h"
+#include "../audio/audio.h"
 #include <fstream>
 #include <vector>
 #include <string>
@@ -82,6 +83,17 @@ static std::unique_ptr<Object> buildObject(const json& node, Object* parent)
             if (Camera* cam = dynamic_cast<Camera*>(obj.get()))
                 currentCam = cam;
         }
+    }
+    else if (type == "audiosource")
+    {
+        obj = makeAudioSource(
+            transform,
+            node.at("soundpath").get<std::string>(),
+            node.at("volume").get<float>(),
+            node.at("maxDistance").get<float>(),
+            node.at("falloff").get<float>(),
+            node.at("loop").get<bool>()
+        );
     }
     else if (type == "capsule")
     {

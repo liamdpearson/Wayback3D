@@ -27,6 +27,9 @@ static sol::object objectToLua(Object* obj)
     else if (Camera* camera = dynamic_cast<Camera*>(obj))
         return sol::make_object(lua, camera);
 
+    else if (AudioSource* audiosource = dynamic_cast<AudioSource*>(obj))
+        return sol::make_object(lua, audiosource);
+
     else if (AnimatedObj* animatedObj = dynamic_cast<AnimatedObj*>(obj))
         return sol::make_object(lua, animatedObj);
 
@@ -153,6 +156,12 @@ static void registerLuaAPI()
         "setCurrent", [](Camera* c) { currentCam = c; },
         sol::base_classes, sol::bases<Object>()
     );
+    lua.new_usertype<AudioSource>("AudioSource",
+        "loop", sol::property(&AudioSource::getLoop, &AudioSource::setLoop),
+        "volume", &AudioSource::volume,
+        "play", &AudioSource::Play,
+        sol::base_classes, sol::bases<Object>()
+    );
     lua.new_usertype<Capsule>("Capsule",
         "height", &Capsule::height,
         "radius", &Capsule::radius,
@@ -177,6 +186,7 @@ static void registerLuaAPI()
         "E", GLFW_KEY_E,
         "R", GLFW_KEY_R,
         "T", GLFW_KEY_T,
+        "Y", GLFW_KEY_Y,
         "A", GLFW_KEY_A,
         "S", GLFW_KEY_S,
         "D", GLFW_KEY_D,

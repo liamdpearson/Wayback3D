@@ -1,6 +1,7 @@
 #include "load.h"
 
 #include "../graphics/graphics.h"
+#include "../audio/audio.h"
 #include "../lighting/lighting.h"
 #include <glm/glm.hpp>                  // vec3, mat4, basic types
 #include <xatlas/xatlas.h>
@@ -725,6 +726,21 @@ std::unique_ptr<AnimatedObj> makeAnimatedObj(const Transform& transform, const c
     rig.animations = anims;
 
     obj->rig = rig;
+
+    return obj;
+}
+
+std::unique_ptr<AudioSource> makeAudioSource(const Transform& transform, const std::string& path,
+                                             float volume, float maxDistance, float falloff, bool loop)
+{
+    auto obj = std::make_unique<AudioSource>();
+    
+    obj->transform = transform;
+    obj->volume = volume;
+    obj->maxDistance = maxDistance;
+    obj->falloff = falloff;
+    obj->setLoop(loop);
+    obj->setPath(path);
 
     return obj;
 }

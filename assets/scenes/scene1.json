@@ -18,6 +18,26 @@
             "children": []
         },
         {
+            "name": "test sound",
+            "type": "audiosource",
+            "tag": "",
+            "scripts": [
+                "assets/scripts/sound.lua"
+            ],
+            "transform": [
+                0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0,
+                1.0, 1.0, 1.0
+            ],
+            "soundpath": "assets/sounds/test.wav",
+            "volume": 10.0,
+            "maxDistance": 30.0,
+            "falloff": 1.0,
+            "loop": true,
+            "parentbonename": "",
+            "children": []
+        },
+        {
             "name": "player",
             "type": "capsule",
             "tag": "",

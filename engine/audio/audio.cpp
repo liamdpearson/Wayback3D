@@ -18,6 +18,8 @@ struct Voice
     bool active = false;
 };
 
+glm::vec3 listener;
+
 static Voice voices[MAX_VOICES];
 
 int initAudio()
@@ -33,10 +35,18 @@ int initAudio()
     }
 
     initialized = true;
-
-    ma_device* device = ma_engine_get_device(&engine);
+    ma_engine_set_volume(&engine, 2.0f);
 
     return 1;
+}
+
+static void releaseVoices()
+{
+    for (int i = 0; i < MAX_VOICES; ++i)
+    {
+        if (voices[i].active && ma_sound_at_end(&voices[i].sound))
+            voices[i].active = false;
+    }
 }
 
 void playSound2D(const char* path)
@@ -53,41 +63,39 @@ static int findEmpty()
     return -1;
 }
 
-static SoundHandle initSound(const char* path, const glm::vec3& pos, float vol, bool loop)
+static int initSound(const char* path, const glm::vec3& pos, float vol, bool loop)
 {
     int i = findEmpty();
     if (i < 0) {
-        std::cout << "Voices full\n"; return SoundHandle{};
+        std::cout << "Voices full\n"; return -1;
     }
-
-    SoundHandle sh = SoundHandle{i};
     
     ma_sound& sound = voices[i].sound;
 
     ma_sound_init_from_file(&engine, path, MA_SOUND_FLAG_DECODE,
                             NULL, NULL, &sound);
     ma_sound_set_position(&sound, pos.x, pos.y, pos.z);
-    ma_sound_set_attenuation_model(&sound, ma_attenuation_model_inverse);
-
-    // temp
-    ma_sound_set_rolloff(&sound, 10.0f);    
-    ma_sound_set_min_distance(&sound, 1.0f);
-    ma_sound_set_max_distance(&sound, 40.0f);
-
+    ma_sound_set_attenuation_model(&sound, ma_attenuation_model_linear);
+    ma_sound_set_rolloff(&sound, 0.0f);
 
     ma_sound_set_volume(&sound, vol);
     ma_sound_set_looping(&sound, loop ? MA_TRUE : MA_FALSE);
-    ma_sound_start(&sound);
 
-    return sh;
+    return i;
 }
 
 void updateAudio(const glm::vec3& pos, const glm::vec3& front, const glm::vec3& up)
 {
+
+    if (!initialized) return;
+
+    releaseVoices();
+
+    listener = pos;
+
     ma_engine_listener_set_position(&engine, 0, pos.x, pos.y, pos.z);
     ma_engine_listener_set_direction(&engine, 0, front.x, front.y, front.z);
     ma_engine_listener_set_world_up(&engine, 0, up.x, up.y, up.z);
-    
 }
 
 void uninitAudio()
@@ -96,7 +104,50 @@ void uninitAudio()
 }
 
 void AudioSource::Compose()
-{
+{  
+    int i = this->getIndex();
+    if (i >= 0) {
+        if (ma_sound_at_end(&voices[i].sound)) {
+            this->setIndex(-1);
+            Object::Compose();
+            return;
+        }
 
+        ma_sound& sound = voices[i].sound;
+        glm::vec3 pos = this->getWorld()[3];
+        ma_sound_set_position(&sound, pos.x, pos.y, pos.z);
+        float dist = glm::length(listener - pos);
+        float vol;
+        if (dist < this->maxDistance) {
+            float a = 1/(1+(dist/this->falloff)*(dist/this->falloff));
+            float b = 1/(1+(this->maxDistance/this->falloff)*(this->maxDistance/this->falloff));
+            float denom = 1 - b;
+
+            vol = this->volume * (a - b) / denom;
+        } else {
+            vol = 0.0f;
+        }
+        
+        ma_sound_set_volume(&sound, vol);
+    }
     Object::Compose();
+}
+
+void AudioSource::Play()
+{
+    if (this->getIndex() < 0) {
+        int i = initSound(getPath().c_str(), this->getWorld()[3], volume, loop);
+        if (i < 0) return;
+        setIndex(i);
+    }
+
+    ma_sound_start(&voices[getIndex()].sound);
+}
+
+void AudioSource::setLoop(bool loop)
+{
+    this->loop = loop;
+    if (this->getIndex() >= 0) {
+        ma_sound_set_looping(&voices[this->getIndex()].sound, loop);
+    }
 }
