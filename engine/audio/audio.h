@@ -29,6 +29,8 @@ class AudioSource : public Object
 
         void Play();
 
+        void Stop();
+
         void setLoop(bool loop);
         bool getLoop() const { return this->loop; }
 
@@ -48,5 +50,7 @@ void playSound2D(const char* path);
 int playSound3D(const char* path, const glm::vec3& pos, float vol, bool loop);
 
 void updateAudio(const glm::vec3& pos, const glm::vec3& front, const glm::vec3& up);
+
+void resetAudio();
 
 void uninitAudio();

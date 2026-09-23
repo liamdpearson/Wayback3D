@@ -263,6 +263,7 @@ int swapScene(const char* path)
     uiRoots.clear();
     resetScripting();
     rootObjs.clear();
+    resetAudio();
     currentCam = nullptr;
     ambient = 0.0f;
     lightmapResScalar = 0.01;

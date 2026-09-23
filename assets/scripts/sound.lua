@@ -1,11 +1,11 @@
-local test
-
 function start()
-    test = find.obj("test sound")
 end
 
 function update(deltaTime)
     if input.keyPressed(key.Y) then
-        test:play()
+        self:play()
+    end
+    if input.keyPressed(key.U) then
+        self:stop()
     end
 end

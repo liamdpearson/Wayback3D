@@ -10,6 +10,7 @@
 static ma_engine engine;
 static bool initialized = false;
 
+// only 32 voices allowed to play at once
 const int MAX_VOICES = 32;
 
 struct Voice
@@ -18,6 +19,7 @@ struct Voice
     bool active = false;
 };
 
+// cached for volume calculation and muffle checking
 glm::vec3 listener;
 
 static Voice voices[MAX_VOICES];
@@ -35,11 +37,12 @@ int initAudio()
     }
 
     initialized = true;
-    ma_engine_set_volume(&engine, 2.0f);
+    ma_engine_set_volume(&engine, 1.0f);
 
     return 1;
 }
 
+// sets all active non playing voices to not active
 static void releaseVoices()
 {
     for (int i = 0; i < MAX_VOICES; ++i)
@@ -49,11 +52,13 @@ static void releaseVoices()
     }
 }
 
+// no spacial audio - miniaudio handles ma_sound stuff
 void playSound2D(const char* path)
 {
     ma_engine_play_sound(&engine, path, NULL);
 }
 
+// finds first empty voice slot and returns index
 static int findEmpty()
 {
     for (int i = 0; i < MAX_VOICES; ++i)
@@ -63,6 +68,7 @@ static int findEmpty()
     return -1;
 }
 
+// initalizes sound and returns index to it in voices
 static int initSound(const char* path, const glm::vec3& pos, float vol, bool loop)
 {
     int i = findEmpty();
@@ -84,6 +90,7 @@ static int initSound(const char* path, const glm::vec3& pos, float vol, bool loo
     return i;
 }
 
+// releases voices and sets listener pos
 void updateAudio(const glm::vec3& pos, const glm::vec3& front, const glm::vec3& up)
 {
 
@@ -98,8 +105,23 @@ void updateAudio(const glm::vec3& pos, const glm::vec3& front, const glm::vec3& 
     ma_engine_listener_set_world_up(&engine, 0, up.x, up.y, up.z);
 }
 
+// doesnt uninit sounds just stops them and sets all to not active
+void resetAudio()
+{
+    for (Voice& v : voices) {
+        ma_sound_stop(&v.sound);
+        v.active = false;
+    }
+}
+
+// uninits all sounds - called when closing whole game
 void uninitAudio()
 {
+    for (Voice& v : voices) {
+        ma_sound_stop(&v.sound);
+        ma_sound_uninit(&v.sound);
+        v.active = false;
+    }
     ma_engine_uninit(&engine);
 }
 
@@ -141,7 +163,21 @@ void AudioSource::Play()
         setIndex(i);
     }
 
-    ma_sound_start(&voices[getIndex()].sound);
+    ma_sound& sound = voices[getIndex()].sound;
+    ma_sound_stop(&sound);
+    ma_sound_seek_to_pcm_frame(&sound, 0);
+    ma_sound_start(&sound);
+}
+
+void AudioSource::Stop()
+{
+    int i = this->getIndex();
+    if (i >= 0) {
+        ma_sound& sound = voices[i].sound;
+        ma_sound_stop(&sound);
+        ma_sound_seek_to_pcm_frame(&sound, 0);
+        voices[i].active = false;
+    }
 }
 
 void AudioSource::setLoop(bool loop)

@@ -141,7 +141,7 @@ class Object
 {
     private:
         glm::mat4 world = glm::mat4(1.0f);
-        int boneIndex = -1; // -1 unless object is a child of a bone in an animated mesh
+        int boneIndex = -1; // -1 unless object is a child of a bone in an armature
         std::string name;
         std::string tag;
 

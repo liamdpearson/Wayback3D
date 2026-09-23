@@ -160,6 +160,7 @@ static void registerLuaAPI()
         "loop", sol::property(&AudioSource::getLoop, &AudioSource::setLoop),
         "volume", &AudioSource::volume,
         "play", &AudioSource::Play,
+        "stop", &AudioSource::Stop,
         sol::base_classes, sol::bases<Object>()
     );
     lua.new_usertype<Capsule>("Capsule",
@@ -187,6 +188,7 @@ static void registerLuaAPI()
         "R", GLFW_KEY_R,
         "T", GLFW_KEY_T,
         "Y", GLFW_KEY_Y,
+        "U", GLFW_KEY_U,
         "A", GLFW_KEY_A,
         "S", GLFW_KEY_S,
         "D", GLFW_KEY_D,
@@ -247,6 +249,8 @@ void loadScripts()
                 si.env["self"] = capsule;
             else if (Camera* camera = dynamic_cast<Camera*>(si.obj))
                 si.env["self"] = camera;
+            else if (AudioSource* audiosource = dynamic_cast<AudioSource*>(si.obj))
+                si.env["self"] = audiosource;
             else if (AnimatedObj* animatedObj = dynamic_cast<AnimatedObj*>(si.obj))
                 si.env["self"] = animatedObj;
             else if (AnimatedMesh* animatedMesh = dynamic_cast<AnimatedMesh*>(si.obj))
