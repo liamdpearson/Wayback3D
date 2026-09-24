@@ -4,8 +4,6 @@
 
 #include <glm/glm.hpp>
 
-#include <cstring>
-
 
 static ma_engine engine;
 static bool initialized = false;
@@ -17,16 +15,17 @@ struct Voice
 {
     ma_sound sound;
     bool active = false;
+    bool initialized = false;
 };
 
 // cached for volume calculation and muffle checking
-glm::vec3 listener;
+static glm::vec3 listener;
 
 static Voice voices[MAX_VOICES];
 
 int initAudio()
 {
-    if (initialized) return 0; // audio already initialized
+    if (initialized) return 1; // audio already initialized
 
     ma_result result = ma_engine_init(NULL, &engine);
     if (result != MA_SUCCESS)
@@ -42,20 +41,15 @@ int initAudio()
     return 1;
 }
 
-// sets all active non playing voices to not active
-static void releaseVoices()
-{
-    for (int i = 0; i < MAX_VOICES; ++i)
-    {
-        if (voices[i].active && ma_sound_at_end(&voices[i].sound))
-            voices[i].active = false;
-    }
-}
-
 // no spacial audio - miniaudio handles ma_sound stuff
 void playSound2D(const char* path)
 {
-    ma_engine_play_sound(&engine, path, NULL);
+    if (initialized) {
+        ma_result result = ma_engine_play_sound(&engine, path, NULL);
+        if (result != MA_SUCCESS) {
+            std::cout << "Failed to play 2D sound " << path << '\n';
+        }
+    }
 }
 
 // finds first empty voice slot and returns index
@@ -75,11 +69,24 @@ static int initSound(const char* path, const glm::vec3& pos, float vol, bool loo
     if (i < 0) {
         std::cout << "Voices full\n"; return -1;
     }
-    
+
     ma_sound& sound = voices[i].sound;
 
-    ma_sound_init_from_file(&engine, path, MA_SOUND_FLAG_DECODE,
-                            NULL, NULL, &sound);
+    if (voices[i].initialized) {
+        ma_sound_uninit(&sound);
+        voices[i].initialized = false;
+    }
+    
+    ma_result result = ma_sound_init_from_file(&engine, path, MA_SOUND_FLAG_DECODE,
+                                               NULL, NULL, &sound);                               
+    if (result != MA_SUCCESS) {
+        std::cout << "Failed to initialize " << path << '\n';
+        return -1;
+    }
+
+    voices[i].active = true;
+    voices[i].initialized = true;
+  
     ma_sound_set_position(&sound, pos.x, pos.y, pos.z);
     ma_sound_set_attenuation_model(&sound, ma_attenuation_model_linear);
     ma_sound_set_rolloff(&sound, 0.0f);
@@ -90,13 +97,9 @@ static int initSound(const char* path, const glm::vec3& pos, float vol, bool loo
     return i;
 }
 
-// releases voices and sets listener pos
 void updateAudio(const glm::vec3& pos, const glm::vec3& front, const glm::vec3& up)
 {
-
     if (!initialized) return;
-
-    releaseVoices();
 
     listener = pos;
 
@@ -105,40 +108,50 @@ void updateAudio(const glm::vec3& pos, const glm::vec3& front, const glm::vec3& 
     ma_engine_listener_set_world_up(&engine, 0, up.x, up.y, up.z);
 }
 
-// doesnt uninit sounds just stops them and sets all to not active
-void resetAudio()
+// uninits all sounds
+void uninitSounds()
 {
     for (Voice& v : voices) {
-        ma_sound_stop(&v.sound);
-        v.active = false;
+        if (v.initialized) {
+            ma_sound_stop(&v.sound);
+            ma_sound_uninit(&v.sound);
+            v.active = false;
+            v.initialized = false;
+        }
     }
 }
 
-// uninits all sounds - called when closing whole game
+// called when closing game
 void uninitAudio()
 {
-    for (Voice& v : voices) {
-        ma_sound_stop(&v.sound);
-        ma_sound_uninit(&v.sound);
-        v.active = false;
+    if (initialized) {
+        uninitSounds();
+        ma_engine_uninit(&engine);
+        initialized = false;
     }
-    ma_engine_uninit(&engine);
+
 }
 
 void AudioSource::Compose()
-{  
+{
+    Object::ComposeSelf();
+
     int i = this->getIndex();
     if (i >= 0) {
-        if (ma_sound_at_end(&voices[i].sound)) {
+        ma_sound& sound = voices[i].sound;
+
+        if (ma_sound_at_end(&sound)) {
             this->setIndex(-1);
-            Object::Compose();
+            voices[i].active = false;
+            for (std::unique_ptr<Object>& child : children) child->Compose();
             return;
         }
 
-        ma_sound& sound = voices[i].sound;
         glm::vec3 pos = this->getWorld()[3];
         ma_sound_set_position(&sound, pos.x, pos.y, pos.z);
         float dist = glm::length(listener - pos);
+
+        if (falloff <= 0) falloff = 0.1f;
         float vol;
         if (dist < this->maxDistance) {
             float a = 1/(1+(dist/this->falloff)*(dist/this->falloff));
@@ -152,7 +165,7 @@ void AudioSource::Compose()
         
         ma_sound_set_volume(&sound, vol);
     }
-    Object::Compose();
+    for (std::unique_ptr<Object>& child : children) child->Compose();
 }
 
 void AudioSource::Play()
@@ -177,6 +190,7 @@ void AudioSource::Stop()
         ma_sound_stop(&sound);
         ma_sound_seek_to_pcm_frame(&sound, 0);
         voices[i].active = false;
+        this->setIndex(-1);
     }
 }
 
@@ -185,5 +199,17 @@ void AudioSource::setLoop(bool loop)
     this->loop = loop;
     if (this->getIndex() >= 0) {
         ma_sound_set_looping(&voices[this->getIndex()].sound, loop);
+    }
+}
+
+AudioSource::~AudioSource()
+{
+    int i = this->getIndex();
+    if (i >= 0 && initialized && voices[i].initialized) {
+        ma_sound& sound = voices[i].sound;
+        ma_sound_stop(&sound);
+        ma_sound_uninit(&sound);
+        voices[i].active = false;
+        voices[i].initialized = false;
     }
 }

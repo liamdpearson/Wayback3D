@@ -113,9 +113,6 @@ int main()
         if (keyHeld(GLFW_KEY_LEFT_ALT) && keyPressed(GLFW_KEY_F4))
             glfwSetWindowShouldClose(window, true);
 
-        if (keyPressed(GLFW_KEY_P))
-            playSound2D("assets/sounds/test.mp3");
-
         endFrameInput();
 
         for (std::unique_ptr<Object>& obj : rootObjs) obj->ComputePose();

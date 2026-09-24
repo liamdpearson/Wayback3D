@@ -16,8 +16,8 @@
 
 
 std::vector<Light> lights;
-float ambient = 0.0f;
-float lightmapResScalar = 0.01;
+float ambient = 0.0f; // default value overriden in loadScene
+float lightmapResScalar = 0.01f; // default value overriden in loadScene
 std::vector<Tri> occluders;
 BVHnode rootNode;
 LightGrid lightGrid;
@@ -41,7 +41,7 @@ glm::vec3 sampleLightAt(const glm::vec3& p)
         float denom = 1 - b;
 
         float atten = light.intensity * (a - b) / denom;
-        atten = std::max(atten, 0.0f); // this line kinda useless but better safe than sorry
+        atten = std::max(atten, 0.0f); // this line kinda useless(line 34) but better safe than sorry
         lit += light.color * atten;
     }
     // if r, g, or b is over 1.0f then divide them all by the largest one. this
@@ -336,8 +336,8 @@ void StaticMesh::BakeLighting(const glm::mat4 parentWorld)
     // lit texel neighbors average. this is meant for the texels that
     // technically arent in the triangle but their corner bleeds into
     // the triangle. loops twice to be accurate which is safe because
-    // the atlas has a island padding of 4 texels.
-    for (int j = 0; j < 2; j++) {
+    // the atlas has an island padding of 4 texels.
+    for (int j = 0; j < 3; j++) {
         std::vector<int> copy = covMask;
         for (size_t i = 0; i < covMask.size(); ++i)
         {

@@ -39,6 +39,9 @@ static float getMeshArea(const std::vector<float>& verts,
 static bool GenUV2(xatlas::Atlas*& atlas, std::vector<float>& verts,
                    std::vector<unsigned int>& idx, float resolution)
 {
+
+    double start = glfwGetTime();
+
     atlas = xatlas::Create();
 
     xatlas::MeshDecl meshDecl;
@@ -62,7 +65,7 @@ static bool GenUV2(xatlas::Atlas*& atlas, std::vector<float>& verts,
     xatlas::ChartOptions chartOptions;
     xatlas::PackOptions packOptions;
     packOptions.resolution = resolution;
-    packOptions.padding = 4;
+    packOptions.padding = 8;
 
     xatlas::Generate(atlas, chartOptions, packOptions);
 
@@ -106,7 +109,11 @@ static bool GenUV2(xatlas::Atlas*& atlas, std::vector<float>& verts,
     idx = finalIdx;
 
     std::cout << "Succesfully created second uv set. New vert count: "
-              << finalVerts.size() / VERTEX_FLOATS << '\n';
+              << finalVerts.size() / VERTEX_FLOATS << '\n'
+              << "# of atlas islands: " << outputMesh.chartCount << '\n';
+
+    std::cout << "Atlas gen took " << (glfwGetTime() - start) << "s\n";
+
     return true;
 }
 

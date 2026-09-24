@@ -3,11 +3,6 @@
 #include "../graphics/graphics.h"
 
 
-// struct SoundHandle
-// {
-//     int index = -1;
-// };
-
 class AudioSource : public Object
 {
     private:
@@ -40,17 +35,15 @@ class AudioSource : public Object
         void setIndex(int i) { this->index = i; }
         int getIndex() const { return this->index; }
 
-
+        ~AudioSource() override;
 };
 
 int initAudio();
 
 void playSound2D(const char* path);
 
-int playSound3D(const char* path, const glm::vec3& pos, float vol, bool loop);
-
 void updateAudio(const glm::vec3& pos, const glm::vec3& front, const glm::vec3& up);
 
-void resetAudio();
+void uninitSounds();
 
 void uninitAudio();
