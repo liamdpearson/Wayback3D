@@ -1,6 +1,6 @@
-#include "collisions.h"
+#include "../include/collisions.h"
 
-#include "../graphics/graphics.h"
+#include "../include/graphics.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

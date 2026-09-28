@@ -1,6 +1,6 @@
-#include "raycast.h"
+#include "../include/raycast.h"
 
-#include "../graphics/graphics.h"
+#include "../include/graphics.h"
 
 #include <glm/glm.hpp>
 

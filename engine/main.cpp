@@ -1,12 +1,12 @@
-#include "audio/audio.h"
-#include "collisions/collisions.h"
-#include "graphics/graphics.h"
-#include "input/input.h"
-#include "lighting/lighting.h"
-#include "load/load.h"
-#include "scenes/scenes.h"
-#include "scripts/scripts.h"
-#include "ui/ui.h"
+#include "include/audio.h"
+#include "include/collisions.h"
+#include "include/graphics.h"
+#include "include/input.h"
+#include "include/lighting.h"
+#include "include/load.h"
+#include "include/scenes.h"
+#include "include/scripts.h"
+#include "include/ui.h"
 
 #include <iostream>
 #include <algorithm>

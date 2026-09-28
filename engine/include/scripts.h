@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../graphics/graphics.h"
-#include "../audio/audio.h"
+#include "graphics.h"
+#include "audio.h"
 #include <vector>
 
 struct ScriptInstance;

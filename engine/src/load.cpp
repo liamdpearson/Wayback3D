@@ -1,8 +1,8 @@
-#include "load.h"
+#include "../include/load.h"
 
-#include "../graphics/graphics.h"
-#include "../audio/audio.h"
-#include "../lighting/lighting.h"
+#include "../include/graphics.h"
+#include "../include/audio.h"
+#include "../include/lighting.h"
 #include <glm/glm.hpp>                  // vec3, mat4, basic types
 #include <xatlas/xatlas.h>
 #include <ufbx/ufbx.h>

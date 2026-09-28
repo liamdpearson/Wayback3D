@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../graphics/graphics.h"
+#include "graphics.h"
 
 extern std::vector<TriAABB> colliders;
 

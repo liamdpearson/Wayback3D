@@ -1,4 +1,4 @@
 {
     "vsync": false,
-    "MAX_FPS": 3000.0
+    "MAX_FPS": 1000.0
 }

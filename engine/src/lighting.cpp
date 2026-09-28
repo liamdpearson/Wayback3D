@@ -1,7 +1,7 @@
-#include "lighting.h"
+#include "../include/lighting.h"
 
-#include "../graphics/graphics.h"
-#include "../raycast/raycast.h"
+#include "../include/graphics.h"
+#include "../include/raycast.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -293,7 +293,7 @@ void StaticMesh::BakeLighting(const glm::mat4 parentWorld)
                 if (w0 < -1e-5f || w1 < -1e-5f || w2 < -1e-5f)
                     continue;
 
-                // gets world pos and world norm for texel
+                // uses black magic to get world pos and world norm for texel
                 glm::vec3 worldPos = w0*wp0 + w1*wp1 + w2*wp2;
                 glm::vec3 worldNorm = glm::normalize(w0*wn0 + w1*wn1 + w2*wn2);
 
@@ -337,7 +337,7 @@ void StaticMesh::BakeLighting(const glm::mat4 parentWorld)
     // technically arent in the triangle but their corner bleeds into
     // the triangle. loops twice to be accurate which is safe because
     // the atlas has an island padding of 4 texels.
-    for (int j = 0; j < 3; j++) {
+    for (int j = 0; j < 2; j++) {
         std::vector<int> copy = covMask;
         for (size_t i = 0; i < covMask.size(); ++i)
         {
@@ -374,7 +374,7 @@ void StaticMesh::BakeLighting(const glm::mat4 parentWorld)
         }
         covMask = copy;
     }
-
+    std::cout << "Baked " << atlas->width << " by " << atlas->height << " texel light map\n";
 
     this->setLightMap(loadLightMap(pixels, atlas->width, atlas->height));
     xatlas::Destroy(atlas);

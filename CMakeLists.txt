@@ -37,16 +37,16 @@ set_target_properties(glfw3 PROPERTIES
 
 # --- engine ---
 add_library(engine STATIC
-    engine/audio/audio.cpp
-    engine/collisions/collisions.cpp
-    engine/graphics/graphics.cpp
-    engine/input/input.cpp
-    engine/lighting/lighting.cpp
-    engine/load/load.cpp
-    engine/raycast/raycast.cpp
-    engine/scenes/scenes.cpp
-    engine/scripts/scripts.cpp
-    engine/ui/ui.cpp
+    engine/src/audio.cpp
+    engine/src/collisions.cpp
+    engine/src/graphics.cpp
+    engine/src/input.cpp
+    engine/src/lighting.cpp
+    engine/src/load.cpp
+    engine/src/raycast.cpp
+    engine/src/scenes.cpp
+    engine/src/scripts.cpp
+    engine/src/ui.cpp
 )
 target_include_directories(engine PUBLIC ${CMAKE_SOURCE_DIR}/engine)
 target_compile_options(engine PRIVATE -Wall -Wextra)

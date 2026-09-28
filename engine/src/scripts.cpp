@@ -1,8 +1,8 @@
 #include "scripts_internal.h"
 
-#include "../collisions/collisions.h"
-#include "../input/input.h"
-#include "../ui/ui.h"
+#include "../include/collisions.h"
+#include "../include/input.h"
+#include "../include/ui.h"
 #include <fstream>
 #include <cstring>
 

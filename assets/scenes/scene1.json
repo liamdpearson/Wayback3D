@@ -164,5 +164,5 @@
         "assets/scripts/cameras.lua"
     ],
     "ambient": 0.4,
-    "lightmapResScalar": 0.1
+    "lightmapResScalar": 0.5
 }

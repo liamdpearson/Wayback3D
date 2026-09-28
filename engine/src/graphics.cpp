@@ -1,8 +1,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
-#include "graphics.h"
-#include "../lighting/lighting.h"
+#include "../include/graphics.h"
+#include "../include/lighting.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -423,16 +423,16 @@ static void sampleClip(const Animation& anim, float t, std::vector<BonePose>& ou
     // calc which two frames to blend and by how much
     float dur = anim.duration > 0.0f ? anim.duration : 1.0f;
     float wrapped = std::fmod(t, dur); // wraps t to between 0 and dur
-    if (wrapped < 0.0f) wrapped += dur;
     float frameF = wrapped * anim.fps;
-    int   f0 = (int)std::floor(frameF) % anim.frameCount; // last frame
-    int   f1 = (f0 + 1) % anim.frameCount; // next frame
+    int   f0 = (int)std::floor(frameF); // last frame
+    int   f1 = (f0 + 1); // next frame
     float a = frameF - std::floor(frameF); // gets percentage between last and next
 
     int n = (int)std::min(out.size(), anim.tracks.size());
     for (int b = 0; b < n; ++b)
     {
         const BoneTrack& tr = anim.tracks[b];
+        // calculates correct values given the nearby values and percentage between
         out[b].pos = glm::mix(tr.pos[f0], tr.pos[f1], a);
         out[b].rot = glm::slerp(tr.rot[f0], tr.rot[f1], a);
         out[b].scale = glm::mix(tr.scale[f0], tr.scale[f1], a);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/graphics.h"
+#include "graphics.h"
 
 
 int loadScene(const char* path);

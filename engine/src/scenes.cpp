@@ -1,13 +1,13 @@
-#include "scenes.h"
+#include "../include/scenes.h"
 
 #include <nlohmann/json.hpp>
-#include "../load/load.h"
-#include "../ui/ui.h"
-#include "../scripts/scripts.h"
-#include "../lighting/lighting.h"
-#include "../graphics/graphics.h"
-#include "../collisions/collisions.h"
-#include "../audio/audio.h"
+#include "../include/load.h"
+#include "../include/ui.h"
+#include "../include/scripts.h"
+#include "../include/lighting.h"
+#include "../include/graphics.h"
+#include "../include/collisions.h"
+#include "../include/audio.h"
 #include <fstream>
 #include <vector>
 #include <string>

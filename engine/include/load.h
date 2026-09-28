@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../graphics/graphics.h"
-#include "../audio/audio.h"
+#include "graphics.h"
+#include "audio.h"
 
 
 std::unique_ptr<StaticMesh> makeStaticMesh(const Transform& transform, const char* objSrc,

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../graphics/graphics.h"
-#include "../raycast/raycast.h"
+#include "graphics.h"
+#include "raycast.h"
 
 #include <glm/glm.hpp>
 
