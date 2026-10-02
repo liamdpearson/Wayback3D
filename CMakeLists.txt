@@ -31,10 +31,19 @@ target_include_directories(lua PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lua)
 
 # --- prebuilt GLFW ---
 add_library(glfw3 STATIC IMPORTED)
-set_target_properties(glfw3 PROPERTIES
-    IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/third_party/glfw/lib/libglfw3.a
-)
 
+if (WIN32)
+	set_target_properties( glfw3 PROPERTIES
+        IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/third_party/glfw/lib/windows/libglfw3.a
+	)
+
+elseif (UNIX)
+	set_target_properties( glfw3 PROPERTIES
+        IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/third_party/glfw/lib/linux/libglfw3.a
+	)
+
+endif()
+    
 # --- engine ---
 add_library(engine STATIC
     engine/src/audio.cpp
@@ -50,7 +59,14 @@ add_library(engine STATIC
 )
 target_include_directories(engine PUBLIC ${CMAKE_SOURCE_DIR}/engine)
 target_compile_options(engine PRIVATE -Wall -Wextra)
-target_link_libraries(engine PUBLIC third_party glfw3 lua opengl32 gdi32)
+
+if (WIN32)
+	target_link_libraries(engine PUBLIC third_party glfw3 lua opengl32 gdi32)
+
+elseif (UNIX)
+	target_link_libraries(engine PUBLIC third_party glfw3 lua GL)
+
+endif()
 
 # --- game ---
 add_executable(app engine/main.cpp)
