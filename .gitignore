@@ -1,5 +1,4 @@
 build*/
 build-wsl*/
-commands.txt
 release.exe
 reldbg.exe
