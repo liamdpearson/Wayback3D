@@ -41,6 +41,17 @@ int initAudio()
     return 1;
 }
 
+// sets master volume 0 is silent 1 is normal 2 is double
+void setMasterVolume(float vol) 
+{
+    if (initialized) {
+        ma_result result = ma_engine_set_volume(&engine, vol);
+        if (result != MA_SUCCESS) {
+            std::cout << "Failed to set volume" << '\n';
+        }
+    }
+}
+
 // no spacial audio - miniaudio handles ma_sound stuff
 void playSound2D(const char* path)
 {

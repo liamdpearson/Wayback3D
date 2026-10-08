@@ -21,8 +21,9 @@ TO DO:
 - Add some sort of particle system
 - Add editor with ImGui
 
-## How to run yourself(Windows)
-### Prerequisites: MinGW/GCC and CMake 3.16 or newer
+## How to run yourself
+### Windows
+Prerequisites: MinGW/GCC and CMake 3.16 or newer
 Make sure gcc, g++, and mingw32-make are on your path.
 1. Clone the repo
 2. cmake -S . -B build -G "MinGW Makefiles"

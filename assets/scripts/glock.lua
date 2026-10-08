@@ -10,11 +10,14 @@ function update(deltaTime)
         if ammo > 1 then
             self.rig:setAnim(2, 0.01, 0)
             ammo = ammo - 1
+            playSound("assets/sounds/gunshot.mp3")
         elseif ammo == 1 then
             self.rig:setAnim(3, 0.01, 1)
             ammo = ammo - 1
+            playSound("assets/sounds/gunshot.mp3")
         else
             self.rig:setAnim(4, 0.05, 1)
+            playSound("assets/sounds/noammo.wav")
         end
     end
 

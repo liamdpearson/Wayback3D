@@ -40,6 +40,8 @@ class AudioSource : public Object
 
 int initAudio();
 
+void setMasterVolume(float vol);
+
 void playSound2D(const char* path);
 
 void updateAudio(const glm::vec3& pos, const glm::vec3& front, const glm::vec3& up);
