@@ -126,21 +126,27 @@ static std::unique_ptr<Object> buildObject(const json& node, Object* parent)
 
 static Light buildLight(const json& node)
 {
-    Light light;
-    light.name = node.value("name", "Unnamed Light");
-    light.tag  = node.value("tag", "");
+    std::string type = node.value("type", "point"); // defauts to point light
 
-    const json& p = node.at("pos");
+    std::string name = node.value("name", "Unnamed Light");
+    std::string tag  = node.value("tag", "");
+
     const json& c = node.at("color");
+    glm::vec3 color = glm::vec3{c.at(0).get<float>(), c.at(1).get<float>(), c.at(2).get<float>()};
+    float intensity = node.at("intensity").get<float>();
+    float radius    = node.at("radius").get<float>();
+    float falloff   = node.at("falloff").get<float>();
 
-    light.pos   = glm::vec3{p.at(0).get<float>(), p.at(1).get<float>(), p.at(2).get<float>()};
-    light.color = glm::vec3{c.at(0).get<float>(), c.at(1).get<float>(), c.at(2).get<float>()};
+    if (type == "point") {
 
-    light.intensity = node.at("intensity").get<float>();
-    light.radius    = node.at("radius").get<float>();
-    light.falloff   = node.at("falloff").get<float>();
+        PointLight light; 
 
-    return light;
+        const json& p = node.at("pos");
+
+        light.pos   = glm::vec3{p.at(0).get<float>(), p.at(1).get<float>(), p.at(2).get<float>()};
+    }
+
+    return NULL;
 }
 
 static std::unique_ptr<UIElement> buildUIElement(const json& node, UIElement* parent)

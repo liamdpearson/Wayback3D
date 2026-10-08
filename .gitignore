@@ -2,3 +2,5 @@ build*/
 build-wsl*/
 release.exe
 reldbg.exe
+.vscode/
+.clangd

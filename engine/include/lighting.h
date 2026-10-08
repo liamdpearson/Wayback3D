@@ -14,11 +14,22 @@ struct Light
 {
     std::string name;
     std::string tag;
-    glm::vec3 pos;
     glm::vec3 color;
     float intensity;
     float radius;
     float falloff;
+};
+
+struct PointLight : Light
+{
+    glm::vec3 pos;
+};
+
+struct LineLight : Light 
+{
+    glm::vec3 start;
+    glm::vec3 end;
+    unsigned int divisions;
 };
 
 struct LightGrid

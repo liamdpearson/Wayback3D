@@ -122,6 +122,7 @@
     "lights": [
         {
             "name": "light1",
+            "type": "point",
             "tag": "",
             "pos": [0.0, 10.0, 0.0],
             "color": [1.0, 1.0, 1.0],
