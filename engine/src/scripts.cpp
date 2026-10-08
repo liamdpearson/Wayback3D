@@ -3,6 +3,7 @@
 #include "../include/collisions.h"
 #include "../include/input.h"
 #include "../include/ui.h"
+#include "../include/audio.h"
 #include <fstream>
 #include <cstring>
 
@@ -210,9 +211,13 @@ static void registerLuaAPI()
         return uiToLua(ui);
     });
     lua.set_function(
-        "swapScene", [](const std::string& path) {
-            pendingScene = path;
-        }
+        "swapScene", [](const std::string& path) { pendingScene = path; }
+    );
+    lua.set_function(
+        "playSound", [](const std::string& path) { playSound2D(path.c_str()); }
+    );
+    lua.set_function(
+        "setMasterVolume", [](float vol) { setMasterVolume(vol); }
     );
     lua.set_function(
         "quit", []() { glfwSetWindowShouldClose(window, true); }

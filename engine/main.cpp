@@ -81,22 +81,22 @@ int main()
         currentFrameTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = currentFrameTime - lastFrameTime;
 
-        double time_left = target_frame_duration - elapsed.count();
-
-        while (time_left > 0.016)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            currentFrameTime = std::chrono::high_resolution_clock::now();
-            elapsed = currentFrameTime - lastFrameTime;
-            time_left = target_frame_duration - elapsed.count();
-        }
-
-        while (time_left > 0.0)
-        {
-            currentFrameTime = std::chrono::high_resolution_clock::now();
-            elapsed = currentFrameTime - lastFrameTime;
-            time_left = target_frame_duration - elapsed.count();
-        }
+        // double time_left = target_frame_duration - elapsed.count();
+        //
+        // while (time_left > 0.016)
+        // {
+        //     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        //     currentFrameTime = std::chrono::high_resolution_clock::now();
+        //     elapsed = currentFrameTime - lastFrameTime;
+        //     time_left = target_frame_duration - elapsed.count();
+        // }
+        //
+        // while (time_left > 0.0)
+        // {
+        //     currentFrameTime = std::chrono::high_resolution_clock::now();
+        //     elapsed = currentFrameTime - lastFrameTime;
+        //     time_left = target_frame_duration - elapsed.count();
+        // }
 
         // set dt
         lastFrameTime = currentFrameTime;
