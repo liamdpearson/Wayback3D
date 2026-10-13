@@ -18,6 +18,8 @@ struct Light
     float intensity;
     float radius;
     float falloff;
+
+    virtual ~Light() = default;
 };
 
 struct PointLight : Light
@@ -29,7 +31,7 @@ struct LineLight : Light
 {
     glm::vec3 start;
     glm::vec3 end;
-    unsigned int divisions;
+    unsigned int segments;
 };
 
 struct LightGrid

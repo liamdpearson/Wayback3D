@@ -109,3 +109,79 @@ bool rayOccluded(const glm::vec3& origin, const glm::vec3& dir,
 //     return false;
 
 // }
+
+
+static glm::vec3 centroid(const Tri& tri)
+{
+    return (tri.a + tri.b + tri.c) / 3.0f;
+}
+
+void splitBVHnode(BVHnode* node)
+{
+    if (node->tris.size() < 5) {
+        node->isLeaf = true;
+        return;
+    }
+
+    float xDiff = node->aabb.max.x - node->aabb.min.x;
+    float yDiff = node->aabb.max.y - node->aabb.min.y;
+    float zDiff = node->aabb.max.z - node->aabb.min.z;
+
+    int axis = 0;
+    if (yDiff > xDiff)
+        axis = 1;
+    if (zDiff > yDiff)
+        axis = 2;
+
+    size_t mid = node->tris.size() / 2;
+
+    std::nth_element(
+        node->tris.begin(),
+        node->tris.begin() + mid,
+        node->tris.end(),
+        [axis](const Tri* a, const Tri* b) {
+            return centroid(*a)[axis] < centroid(*b)[axis];
+        }
+    );
+
+    std::vector<Tri*> leftTris(node->tris.begin(), node->tris.begin() + mid);
+    AABB leftAABB{glm::vec3{INFINITY}, glm::vec3{-INFINITY}};
+
+    for (Tri* t : leftTris)
+    {
+        leftAABB.min = glm::min(t->a, leftAABB.min);
+        leftAABB.min = glm::min(t->b, leftAABB.min);
+        leftAABB.min = glm::min(t->c, leftAABB.min);
+
+        leftAABB.max = glm::max(t->a, leftAABB.max);
+        leftAABB.max = glm::max(t->b, leftAABB.max);
+        leftAABB.max = glm::max(t->c, leftAABB.max);
+    }
+
+    auto left = std::make_unique<BVHnode>(BVHnode{
+        leftAABB, nullptr, nullptr, leftTris, false
+    });
+    node->left = std::move(left);
+
+    std::vector<Tri*> rightTris(node->tris.begin() + mid, node->tris.end());
+    AABB rightAABB{glm::vec3{INFINITY}, glm::vec3{-INFINITY}};
+
+    for (Tri* t : rightTris)
+    {
+        rightAABB.min = glm::min(t->a, rightAABB.min);
+        rightAABB.min = glm::min(t->b, rightAABB.min);
+        rightAABB.min = glm::min(t->c, rightAABB.min);
+
+        rightAABB.max = glm::max(t->a, rightAABB.max);
+        rightAABB.max = glm::max(t->b, rightAABB.max);
+        rightAABB.max = glm::max(t->c, rightAABB.max);
+    }
+
+    auto right = std::make_unique<BVHnode>(BVHnode{
+        rightAABB, nullptr, nullptr, rightTris, false
+    });
+    node->right = std::move(right);
+
+    splitBVHnode(node->left.get());
+    splitBVHnode(node->right.get());
+}

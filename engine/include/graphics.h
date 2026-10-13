@@ -240,9 +240,9 @@ class StaticMesh : public Mesh
         StaticMesh() = default;
 
         void Draw() override;
-        void CollectOccluders(const glm::mat4 parentWorld, std::vector<Tri>& out);
-        void CollectColliders(const glm::mat4 parentWorld, std::vector<TriAABB>& out);
-        void BakeLighting(const glm::mat4 parentWorld);
+        void CollectOccluders(const glm::mat4 parentWorld, std::vector<Tri>& out) override;
+        void CollectColliders(const glm::mat4 parentWorld, std::vector<TriAABB>& out) override;
+        void BakeLighting(const glm::mat4 parentWorld) override;
 
         void setLightMap(const unsigned int& lm) { this->lightMap = lm; }
         unsigned int getLightMap() const { return this->lightMap; }

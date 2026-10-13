@@ -18,3 +18,5 @@ struct BVHnode
 
 bool rayOccluded(const glm::vec3& origin, const glm::vec3& dir,
                         float maxDist, const BVHnode& node);
+
+void splitBVHnode(BVHnode* node);

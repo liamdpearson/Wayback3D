@@ -9,7 +9,7 @@ class AudioSource : public Object
         std::string path;
         int index = -1;
 
-        
+    
         bool loop = false;
 
     public:

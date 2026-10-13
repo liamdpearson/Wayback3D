@@ -142,11 +142,20 @@ static Light buildLight(const json& node)
         PointLight light; 
 
         const json& p = node.at("pos");
-
         light.pos   = glm::vec3{p.at(0).get<float>(), p.at(1).get<float>(), p.at(2).get<float>()};
+
+        light.name = name;
+        light.tag = tag;
+
+        light.color = color;
+        light.intensity = intensity;
+        light.radius = radius;
+        light.falloff = falloff;
+        
+        return light;
     }
 
-    return NULL;
+    return Light{};
 }
 
 static std::unique_ptr<UIElement> buildUIElement(const json& node, UIElement* parent)
