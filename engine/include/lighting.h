@@ -40,7 +40,7 @@ struct LightGrid
     glm::vec3 min{INFINITY}, max{-INFINITY};
 };
 
-extern std::vector<Light> lights;
+extern std::vector<Light*> lights;
 extern float ambient;
 extern float lightmapResScalar;
 extern std::vector<Tri> occluders;

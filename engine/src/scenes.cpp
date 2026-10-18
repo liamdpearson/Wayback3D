@@ -13,6 +13,7 @@
 #include <string>
 #include <iostream>
 
+
 using json = nlohmann::json;
 
 static std::unique_ptr<Object> buildObject(const json& node, Object* parent)
@@ -124,7 +125,7 @@ static std::unique_ptr<Object> buildObject(const json& node, Object* parent)
     return obj;
 }
 
-static Light buildLight(const json& node)
+static Light* buildLight(const json& node)
 {
     std::string type = node.value("type", "point"); // defauts to point light
 
@@ -139,23 +140,23 @@ static Light buildLight(const json& node)
 
     if (type == "point") {
 
-        PointLight light; 
+        PointLight* light = new PointLight{};
 
         const json& p = node.at("pos");
-        light.pos   = glm::vec3{p.at(0).get<float>(), p.at(1).get<float>(), p.at(2).get<float>()};
+        light->pos   = glm::vec3{p.at(0).get<float>(), p.at(1).get<float>(), p.at(2).get<float>()};
 
-        light.name = name;
-        light.tag = tag;
+        light->name = name;
+        light->tag = tag;
 
-        light.color = color;
-        light.intensity = intensity;
-        light.radius = radius;
-        light.falloff = falloff;
+        light->color = color;
+        light->intensity = intensity;
+        light->radius = radius;
+        light->falloff = falloff;
         
         return light;
     }
-
-    return Light{};
+    
+    return nullptr;
 }
 
 static std::unique_ptr<UIElement> buildUIElement(const json& node, UIElement* parent)
@@ -228,7 +229,7 @@ int loadScene(const char* path)
         lightmapResScalar = scene.value("lightmapResScalar", 0.01f);
 
         std::vector<std::unique_ptr<Object>> tempObjs;
-        std::vector<Light> tempLights;
+        std::vector<Light*> tempLights;
         std::vector<Font> tempFonts;
         std::vector<std::unique_ptr<UIElement>> tempUI;
 
@@ -239,7 +240,7 @@ int loadScene(const char* path)
         }
         for (const json& node : scene.value("lights", json::array()))
         {
-            Light l = buildLight(node);
+            Light* l = buildLight(node);
             tempLights.push_back(l);
         }
         for (const json& node : scene.value("fonts", json::array()))
