@@ -220,6 +220,11 @@ int loadScene(const char* path)
         return 0;
     }
 
+    std::vector<std::unique_ptr<Object>> tempObjs;
+    std::vector<Light*> tempLights;
+    std::vector<Font> tempFonts;
+    std::vector<std::unique_ptr<UIElement>> tempUI;
+
     try
     {
         json scene;
@@ -227,11 +232,6 @@ int loadScene(const char* path)
 
         ambient = scene.value("ambient", 0.0f);
         lightmapResScalar = scene.value("lightmapResScalar", 0.01f);
-
-        std::vector<std::unique_ptr<Object>> tempObjs;
-        std::vector<Light*> tempLights;
-        std::vector<Font> tempFonts;
-        std::vector<std::unique_ptr<UIElement>> tempUI;
 
         for (const json& node : scene.value("objects", json::array()))
         {
@@ -241,7 +241,7 @@ int loadScene(const char* path)
         for (const json& node : scene.value("lights", json::array()))
         {
             Light* l = buildLight(node);
-            tempLights.push_back(l);
+            if (l) tempLights.push_back(l);
         }
         for (const json& node : scene.value("fonts", json::array()))
         {
@@ -269,6 +269,9 @@ int loadScene(const char* path)
     catch(const json::exception& e)
     {
         std::cout << "loadScene: " << path << ": " << e.what() << '\n';
+        for (Light* l : tempLights) delete l;
+        tempLights.clear();
+        return 0;
     }
 
     return 1;
@@ -283,6 +286,8 @@ int swapScene(const char* path)
     currentCam = nullptr;
     ambient = 0.0f;
     lightmapResScalar = 0.01;
+    for (Light* l : lights) delete l;
+    lights.clear();
 
     if (!loadScene(path)) return 0;
     loadScripts();

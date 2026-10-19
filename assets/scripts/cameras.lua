@@ -16,6 +16,6 @@ function update(deltaTime)
         setMasterVolume(2.0)
     end
     if input.keyPressed(key.T) then
-        swapScene("assets/scenes/scenee1.json")
+        swapScene("assets/scenes/scene1.json")
     end
 end

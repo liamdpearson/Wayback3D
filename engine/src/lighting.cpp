@@ -383,8 +383,6 @@ void StaticMesh::BakeLighting(const glm::mat4 parentWorld)
     std::cout << "Baked " << atlas->width << " by " << atlas->height << " texel light map\n";
 
     this->setLightMap(loadLightMap(pixels, atlas->width, atlas->height));
-    xatlas::Destroy(atlas);
-    this->setAtlas(nullptr);
     
     // pass parent world because not every object is a static mesh so
     // Object::CollectOccluders has to * transform.matrix() aswell.

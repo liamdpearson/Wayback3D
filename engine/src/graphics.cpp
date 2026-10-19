@@ -664,4 +664,5 @@ Mesh::~Mesh()
 StaticMesh::~StaticMesh()
 {
     glDeleteTextures(1, &lightMap);
+    xatlas::Destroy(atlas);
 }

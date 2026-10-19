@@ -182,6 +182,7 @@ static void loadFbxUnanimated(const char* path, std::vector<float>& outVerts,
             }
         }
     }
+    ufbx_free_scene(scene);
 }
 
 // loads .obj file

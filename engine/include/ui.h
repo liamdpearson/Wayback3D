@@ -194,6 +194,8 @@ class UIText : public UIElement
 
         //void setEBO(unsigned int ebo) { this->EBO = ebo; }
         unsigned int getEBO() const { return this->EBO; }
+
+        ~UIText() override;
 };
 
 extern unsigned int uiProgram;

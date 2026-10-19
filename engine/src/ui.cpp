@@ -389,3 +389,10 @@ UIImage::~UIImage()
     glDeleteBuffers(1, &EBO);
     glDeleteTextures(1, &texture);
 }
+
+UIText::~UIText()
+{
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+}

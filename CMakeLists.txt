@@ -30,7 +30,6 @@ add_library(lua STATIC third_party/lua/onelua.c)
 target_compile_definitions(lua PRIVATE MAKE_LIB)
 target_include_directories(lua PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lua)
 
-
 # --- prebuilt GLFW ---
 add_library(glfw3 STATIC IMPORTED)
 
