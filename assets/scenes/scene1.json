@@ -129,6 +129,18 @@
             "intensity": 40.0,
             "radius": 40.0,
             "falloff": 1.0
+        },
+        {
+            "name": "light2",
+            "type": "line",
+            "tag": "",
+            "start": [-5.0, 2.0, 3.0],
+            "end": [5.0, 2.0, 3.0],
+            "segments": 10,
+            "color": [1.0, 0.0, 0.0],
+            "intensity": 10.0,
+            "radius": 30.0,
+            "falloff": 1.0
         }
     ],
     "fonts": [

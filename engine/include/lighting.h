@@ -31,7 +31,7 @@ struct LineLight : Light
 {
     glm::vec3 start;
     glm::vec3 end;
-    unsigned int segments;
+    int segments;
 };
 
 struct LightGrid

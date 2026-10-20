@@ -155,6 +155,27 @@ static Light* buildLight(const json& node)
         
         return light;
     }
+    else if (type == "line") {
+        LineLight* light = new LineLight{};
+
+        const json& start = node.at("start");
+        const json& end = node.at("end");
+
+        light->start = glm::vec3{start.at(0).get<float>(), start.at(1).get<float>(), start.at(2).get<float>()};
+        light->end = glm::vec3{end.at(0).get<float>(), end.at(1).get<float>(), end.at(2).get<float>()};
+
+        light->segments = node.value("segments", 1);
+
+        light->name = name;
+        light->tag = tag;
+
+        light->color = color;
+        light->intensity = intensity;
+        light->radius = radius;
+        light->falloff = falloff;
+        
+        return light;
+    }
     
     return nullptr;
 }

@@ -29,22 +29,46 @@ glm::vec3 sampleLightAt(const glm::vec3& p)
 
     for (const Light* l: lights)
     {
-        const PointLight* light = dynamic_cast<const PointLight*>(l);
-        
-        glm::vec3 toLight = light->pos - p;
-        float dist = glm::length(toLight);
-        if (dist > light->radius) continue;
-        glm::vec3 dir = glm::normalize(toLight);
+        // point lights
+        if (const PointLight* light = dynamic_cast<const PointLight*>(l)) {
+            glm::vec3 toLight = light->pos - p;
+            float dist = glm::length(toLight);
+            if (dist > light->radius) continue;
+            glm::vec3 dir = glm::normalize(toLight);
 
-        if (rayOccluded(p, dir, dist, rootNode)) continue;
-        
-        float a = 1/(1+(dist/light->falloff)*(dist/light->falloff));
-        float b = 1/(1+(light->radius/light->falloff)*(light->radius/light->falloff));
-        float denom = 1 - b;
+            if (rayOccluded(p, dir, dist, rootNode)) continue;
+            
+            float a = 1/(1+(dist/light->falloff)*(dist/light->falloff));
+            float b = 1/(1+(light->radius/light->falloff)*(light->radius/light->falloff));
+            float denom = 1 - b;
 
-        float atten = light->intensity * (a - b) / denom;
-        atten = std::max(atten, 0.0f); // this line kinda useless(line 34) but better safe than sorry
-        lit += light->color * atten;
+            float atten = light->intensity * (a - b) / denom;
+            atten = std::max(atten, 0.0f); // this line kinda useless(line 34) but better safe than sorry
+            lit += light->color * atten;
+        }
+        else if (const LineLight* light = dynamic_cast<const LineLight*>(l)) {
+            const glm::vec3 startToEnd= light->end - light->start;
+
+            for (int i = 0; i <= light->segments; i++) {
+                
+                const glm::vec3 pos = light->start + ((float)i/(float)light->segments) * startToEnd;
+                glm::vec3 toLight = pos - p;
+                float dist = glm::length(toLight);
+                if (dist > light->radius) continue;
+                glm::vec3 dir = glm::normalize(toLight);
+
+                if (rayOccluded(p, dir, dist, rootNode)) continue;
+                
+                float a = 1/(1+(dist/light->falloff)*(dist/light->falloff));
+                float b = 1/(1+(light->radius/light->falloff)*(light->radius/light->falloff));
+                float denom = 1 - b;
+
+                float atten = light->intensity/(float)light->segments * (a - b) / denom;
+                atten = std::max(atten, 0.0f); // this line kinda useless(line 34) but better safe than sorry
+                lit += light->color * atten;
+            }
+        }
+        
     }
     // if r, g, or b is over 1.0f then divide them all by the largest one. this
     // will force the values between 0 and 1 while still preserving the hue
@@ -61,24 +85,48 @@ std::pair<glm::vec3, glm::vec3> sampleLightAndDir(const glm::vec3& p)
 
     for (const Light* l: lights)
     {
-        const PointLight* light = dynamic_cast<const PointLight*>(l);
+        if (const PointLight* light = dynamic_cast<const PointLight*>(l)) {
+            glm::vec3 toLight = light->pos - p;
+            float dist = glm::length(toLight);
+            if (dist > light->radius) continue;
+            glm::vec3 d = glm::normalize(toLight);
 
-        glm::vec3 toLight = light->pos - p;
-        float dist = glm::length(toLight);
-        if (dist > light->radius) continue;
-        glm::vec3 d = glm::normalize(toLight);
+            if (rayOccluded(p, d, dist, rootNode)) continue;
+            
+            float a = 1/(1+(dist/light->falloff)*(dist/light->falloff));
+            float b = 1/(1+(light->radius/light->falloff)*(light->radius/light->falloff));
+            float denom = 1 - b;
 
-        if (rayOccluded(p, d, dist, rootNode)) continue;
-        
-        float a = 1/(1+(dist/light->falloff)*(dist/light->falloff));
-        float b = 1/(1+(light->radius/light->falloff)*(light->radius/light->falloff));
-        float denom = 1 - b;
+            float atten = light->intensity * (a - b) / denom;
+            atten = std::max(atten, 0.0f); // this line kinda useless but better safe than sorry
+            lit += light->color * atten;
 
-        float atten = light->intensity * (a - b) / denom;
-        atten = std::max(atten, 0.0f); // this line kinda useless but better safe than sorry
-        lit += light->color * atten;
+            dir += d * light->intensity / light->radius;
+        }
+        else if (const LineLight* light = dynamic_cast<const LineLight*>(l)) {
+            const glm::vec3 startToEnd= light->end - light->start;
 
-        dir += d * light->intensity / light->radius;
+            for (int i = 0; i <= light->segments; i++) {
+                const glm::vec3 pos = light->start + ((float)i/(float)light->segments) * startToEnd;
+                glm::vec3 toLight = pos - p;
+                float dist = glm::length(toLight);
+                if (dist > light->radius) continue;
+                glm::vec3 d = glm::normalize(toLight);
+
+                if (rayOccluded(p, d, dist, rootNode)) continue;
+                
+                float a = 1/(1+(dist/light->falloff)*(dist/light->falloff));
+                float b = 1/(1+(light->radius/light->falloff)*(light->radius/light->falloff));
+                float denom = 1 - b;
+
+                float atten = light->intensity/(float)light->segments * (a - b) / denom;
+                atten = std::max(atten, 0.0f); // this line kinda useless but better safe than sorry
+                lit += light->color * atten;
+
+                dir += d * (light->intensity/(float)light->segments) / light->radius;
+                std::cout << light->intensity/(float)light->segments << '\n';
+            }
+        }
     }
     // if r, g, or b is over 1.0f then divide them all by the largest one. this
     // will force the values between 0 and 1 while still preserving the hue
@@ -173,6 +221,7 @@ std::pair<glm::vec3, glm::vec3> gridLightAt(const glm::vec3& p)
     // cancel out or were never lit leave nothing to normalise.
     if (glm::dot(dir, dir) > 0.0f) dir = glm::normalize(dir);
 
+    // std::cout << dir.x << ' ' << dir.y << ' ' << dir.z << '\n';
     return std::pair<glm::vec3, glm::vec3>{lit, dir};
 }
 
@@ -306,29 +355,55 @@ void StaticMesh::BakeLighting(const glm::mat4 parentWorld)
 
                 for (const Light* l: lights)
                 {
-                    const PointLight* light = dynamic_cast<const PointLight*>(l);
+                    if (const PointLight* light = dynamic_cast<const PointLight*>(l)) {
+                        glm::vec3 toLight = light->pos - worldPos;
+                        float dist = glm::length(toLight);
+                        if (dist < 0.0001f || dist > light->radius) continue;
 
-                    glm::vec3 toLight = light->pos - worldPos;
-                    float dist = glm::length(toLight);
-                    if (dist < 0.0001f || dist > light->radius) continue;
+                        glm::vec3 dir = toLight / dist;
+                        float lambert = glm::max(glm::dot(worldNorm, dir), 0.0f);
+                        if (lambert <= 0) continue;
 
-                    glm::vec3 dir = toLight / dist;
-                    float lambert = glm::max(glm::dot(worldNorm, dir), 0.0f);
-                    if (lambert <= 0) continue;
+                        glm::vec3 origin = worldPos + worldNorm * 1e-3f; // shadow bias
+                        if (rayOccluded(origin, dir, dist, rootNode)) continue;
+                        
+                        float a = 1/(1+(dist/light->falloff)*(dist/light->falloff));
+                        float b = 1/(1+(light->radius/light->falloff)*(light->radius/light->falloff));
+                        float denom = 1 - b;
 
-                    glm::vec3 origin = worldPos + worldNorm * 1e-3f; // shadow bias
-                    if (rayOccluded(origin, dir, dist, rootNode)) continue;
-                    
-                    float a = 1/(1+(dist/light->falloff)*(dist/light->falloff));
-                    float b = 1/(1+(light->radius/light->falloff)*(light->radius/light->falloff));
-                    float denom = 1 - b;
+                        float atten = light->intensity * (a - b) / denom;
+                        atten = std::max(atten, 0.0f);  // this line kinda useless but better safe than sorry
 
-                    float atten = light->intensity * (a - b) / denom;
-                    atten = std::max(atten, 0.0f);  // this line kinda useless but better safe than sorry
+                        lit += light->color * lambert * atten;
+                    }
+                    else if (const LineLight* light = dynamic_cast<const LineLight*>(l)) {
+                        const glm::vec3 startToEnd= light->end - light->start;
 
-                    lit += light->color * lambert * atten;
+                        for (int i = 0; i <= light->segments; i++) {
+                            const glm::vec3 pos = light->start + ((float)i/(float)light->segments) * startToEnd;
+
+                            glm::vec3 toLight = pos - worldPos;
+                            float dist = glm::length(toLight);
+                            if (dist < 0.0001f || dist > light->radius) continue;
+
+                            glm::vec3 dir = toLight / dist;
+                            float lambert = glm::max(glm::dot(worldNorm, dir), 0.0f);
+                            if (lambert <= 0) continue;
+
+                            glm::vec3 origin = worldPos + worldNorm * 1e-3f; // shadow bias
+                            if (rayOccluded(origin, dir, dist, rootNode)) continue;
+                            
+                            float a = 1/(1+(dist/light->falloff)*(dist/light->falloff));
+                            float b = 1/(1+(light->radius/light->falloff)*(light->radius/light->falloff));
+                            float denom = 1 - b;
+
+                            float atten = light->intensity/(float)light->segments * (a - b) / denom;
+                            atten = std::max(atten, 0.0f);  // this line kinda useless but better safe than sorry
+
+                            lit += light->color * lambert * atten;
+                        }
+                    }
                 }
-
                 // hue preservation clamp
                 float peak = glm::max(lit.r, glm::max(lit.g, lit.b));
                 if (peak > 1.0f) lit /= peak;
