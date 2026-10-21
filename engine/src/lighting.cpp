@@ -33,7 +33,7 @@ glm::vec3 sampleLightAt(const glm::vec3& p)
         if (const PointLight* light = dynamic_cast<const PointLight*>(l)) {
             glm::vec3 toLight = light->pos - p;
             float dist = glm::length(toLight);
-            if (dist > light->radius) continue;
+            if (dist < 0.00001f || dist > light->radius) continue;
             glm::vec3 dir = glm::normalize(toLight);
 
             if (rayOccluded(p, dir, dist, rootNode)) continue;
@@ -88,7 +88,7 @@ std::pair<glm::vec3, glm::vec3> sampleLightAndDir(const glm::vec3& p)
         if (const PointLight* light = dynamic_cast<const PointLight*>(l)) {
             glm::vec3 toLight = light->pos - p;
             float dist = glm::length(toLight);
-            if (dist > light->radius) continue;
+            if (dist < 0.00001f || dist > light->radius) continue;
             glm::vec3 d = glm::normalize(toLight);
 
             if (rayOccluded(p, d, dist, rootNode)) continue;
@@ -101,7 +101,7 @@ std::pair<glm::vec3, glm::vec3> sampleLightAndDir(const glm::vec3& p)
             atten = std::max(atten, 0.0f); // this line kinda useless but better safe than sorry
             lit += light->color * atten;
 
-            dir += d * light->intensity / light->radius;
+            dir += d * atten;
         }
         else if (const LineLight* light = dynamic_cast<const LineLight*>(l)) {
             const glm::vec3 startToEnd= light->end - light->start;
@@ -110,7 +110,7 @@ std::pair<glm::vec3, glm::vec3> sampleLightAndDir(const glm::vec3& p)
                 const glm::vec3 pos = light->start + ((float)i/(float)light->segments) * startToEnd;
                 glm::vec3 toLight = pos - p;
                 float dist = glm::length(toLight);
-                if (dist > light->radius) continue;
+                if (dist < 0.00001f || dist > light->radius) continue;
                 glm::vec3 d = glm::normalize(toLight);
 
                 if (rayOccluded(p, d, dist, rootNode)) continue;
@@ -123,8 +123,7 @@ std::pair<glm::vec3, glm::vec3> sampleLightAndDir(const glm::vec3& p)
                 atten = std::max(atten, 0.0f); // this line kinda useless but better safe than sorry
                 lit += light->color * atten;
 
-                dir += d * (light->intensity/(float)light->segments) / light->radius;
-                std::cout << light->intensity/(float)light->segments << '\n';
+                dir += d * atten;
             }
         }
     }
