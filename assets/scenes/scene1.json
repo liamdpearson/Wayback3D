@@ -128,7 +128,7 @@
             "color": [1.0, 1.0, 1.0],
             "intensity": 40.0,
             "radius": 40.0,
-            "falloff": 1.0
+            "falloff": 0.4
         },
         {
             "name": "light2",
