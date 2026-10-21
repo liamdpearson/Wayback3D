@@ -7,7 +7,7 @@ A simple game engine meant to make 3d games that look like they were made way ba
 - UI hierarchy with types: UIElement, UIImage, and UIText
 - Ability to have multiple cameras and draw from whichever you want
 - Basic collisions for Capsules
-- Light maps for static objects
+- Light maps for static objects with point and line lights
 - Light grid for dynamic objects containing light value and dominant light direction
 - Mesh support from obj and fbx files
 - Armature and animation support from fbx files
