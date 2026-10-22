@@ -2,8 +2,6 @@
 
 #include <GLFW/glfw3.h>
 
-#include <vector>
-
 
 void mouseMoveCallback(GLFWwindow*, double xpos, double ypos);
 

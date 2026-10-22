@@ -16,6 +16,7 @@ struct Voice
     ma_sound sound;
     bool active = false;
     bool initialized = false;
+    bool is2d = false;
 };
 
 // cached for volume calculation and muffle checking
@@ -52,17 +53,6 @@ void setMasterVolume(float vol)
     }
 }
 
-// no spacial audio - miniaudio handles ma_sound stuff
-void playSound2D(const char* path)
-{
-    if (initialized) {
-        ma_result result = ma_engine_play_sound(&engine, path, NULL);
-        if (result != MA_SUCCESS) {
-            std::cout << "Failed to play 2D sound " << path << '\n';
-        }
-    }
-}
-
 // finds first empty voice slot and returns index
 static int findEmpty()
 {
@@ -73,12 +63,40 @@ static int findEmpty()
     return -1;
 }
 
+// no spacial audio - miniaudio handles ma_sound stuff
+void playSound2D(const char* path, float vol)
+{
+    int i = findEmpty();
+    if (i < 0) {
+        std::cout << "voices full\n"; return;
+    }
+    ma_sound& sound = voices[i].sound;
+
+    if (voices[i].initialized) {
+        ma_sound_uninit(&sound);
+        voices[i].initialized = false;
+    }
+
+    ma_result result = ma_sound_init_from_file(&engine, path, MA_SOUND_FLAG_DECODE,
+                                               NULL, NULL, &sound);                               
+    if (result != MA_SUCCESS) {
+        std::cout << "Failed to initialize " << path << '\n';
+        return;
+    }
+    
+    voices[i].active = true;
+    voices[i].initialized = true;
+    
+    ma_sound_set_attenuation_model(&sound, ma_attenuation_model_none);
+    ma_sound_set_volume(&sound, vol);
+}
+
 // initalizes sound and returns index to it in voices
 static int initSound(const char* path, const glm::vec3& pos, float vol, bool loop)
 {
     int i = findEmpty();
     if (i < 0) {
-        std::cout << "Voices full\n"; return -1;
+        std::cout << "voices full\n"; return -1;
     }
 
     ma_sound& sound = voices[i].sound;
@@ -128,6 +146,7 @@ void uninitSounds()
             ma_sound_uninit(&v.sound);
             v.active = false;
             v.initialized = false;
+            v.is2d = false;
         }
     }
 }
@@ -140,7 +159,6 @@ void uninitAudio()
         ma_engine_uninit(&engine);
         initialized = false;
     }
-
 }
 
 void AudioSource::Compose()
@@ -154,6 +172,7 @@ void AudioSource::Compose()
         if (ma_sound_at_end(&sound)) {
             this->setIndex(-1);
             voices[i].active = false;
+            voices[i].is2d = false;
             for (std::unique_ptr<Object>& child : children) child->Compose();
             return;
         }
@@ -163,17 +182,18 @@ void AudioSource::Compose()
         float dist = glm::length(listener - pos);
 
         if (falloff <= 0) falloff = 0.1f;
-        float vol;
-        if (dist < this->maxDistance) {
-            float a = 1/(1+(dist/this->falloff)*(dist/this->falloff));
-            float b = 1/(1+(this->maxDistance/this->falloff)*(this->maxDistance/this->falloff));
-            float denom = 1 - b;
+        float vol = 0.0f;
 
-            vol = this->volume * (a - b) / denom;
-        } else {
-            vol = 0.0f;
+        if (voices[i].is2d) vol = this->volume;
+        else {
+            if (dist < this->maxDistance) {
+                float a = 1/(1+(dist/this->falloff)*(dist/this->falloff));
+                float b = 1/(1+(this->maxDistance/this->falloff)*(this->maxDistance/this->falloff));
+                float denom = 1 - b;
+
+                vol = this->volume * (a - b) / denom;
+            }
         }
-        
         ma_sound_set_volume(&sound, vol);
     }
     for (std::unique_ptr<Object>& child : children) child->Compose();
@@ -201,6 +221,7 @@ void AudioSource::Stop()
         ma_sound_stop(&sound);
         ma_sound_seek_to_pcm_frame(&sound, 0);
         voices[i].active = false;
+        voices[i].is2d = false;
         this->setIndex(-1);
     }
 }
