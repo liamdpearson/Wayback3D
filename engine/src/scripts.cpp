@@ -214,7 +214,7 @@ static void registerLuaAPI()
         "swapScene", [](const std::string& path) { pendingScene = path; }
     );
     lua.set_function(
-        "playSound", [](const std::string& path) { playSound2D(path.c_str()); }
+        "playSound", [](const std::string& path, float vol) { playSound2D(path.c_str(), vol); }
     );
     lua.set_function(
         "setMasterVolume", [](float vol) { setMasterVolume(vol); }
