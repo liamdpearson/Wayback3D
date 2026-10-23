@@ -17,7 +17,7 @@ function update(deltaTime)
             playSound("assets/sounds/gunshot.mp3", 1.0)
         else
             self.rig:setAnim(4, 0.05, 1)
-            playSound("assets/sounds/noammo.wav", 0.1)
+            playSound("assets/sounds/noammo.wav", 0.3)
         end
     end
 

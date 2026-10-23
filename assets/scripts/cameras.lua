@@ -8,12 +8,10 @@ end
 
 function update(deltaTime)
     if input.keyPressed(key.Q) then
-        --cam2:setCurrent()
-        setMasterVolume(0.0)
+        cam2:setCurrent()
     end
     if input.keyPressed(key.E) then
-        --cam1:setCurrent()
-        setMasterVolume(2.0)
+        cam1:setCurrent()
     end
     if input.keyPressed(key.T) then
         swapScene("assets/scenes/scene1.json")

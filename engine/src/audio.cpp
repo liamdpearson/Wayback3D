@@ -79,7 +79,7 @@ void playSound2D(const char* path, float vol)
         voices[i].initialized = false;
     }
 
-    ma_result result = ma_sound_init_from_file(&engine, path, MA_SOUND_FLAG_DECODE,
+    ma_result result = ma_sound_init_from_file(&engine, path, MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION,
                                                NULL, NULL, &sound);                               
     if (result != MA_SUCCESS) {
         std::cout << "Failed to initialize " << path << '\n';
@@ -89,7 +89,6 @@ void playSound2D(const char* path, float vol)
     voices[i].active = true;
     voices[i].initialized = true;
     
-    ma_sound_set_attenuation_model(&sound, ma_attenuation_model_none);
     ma_sound_set_volume(&sound, vol);
     ma_sound_start(&sound);
 
@@ -147,10 +146,7 @@ void updateAudio(const glm::vec3& pos, const glm::vec3& front, const glm::vec3& 
         }
     }
     for (int i : remove) {
-        auto it = std::find(voicesActive2d.begin(), voicesActive2d.end(), i);
-
-        if (it != voicesActive2d.end()) {
-        }
+        voicesActive2d.erase(std::remove(voicesActive2d.begin(), voicesActive2d.end(), i), voicesActive2d.end());
     }
     ma_engine_listener_set_position(&engine, 0, pos.x, pos.y, pos.z);
     ma_engine_listener_set_direction(&engine, 0, front.x, front.y, front.z);
