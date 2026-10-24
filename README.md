@@ -17,7 +17,7 @@ A simple game engine meant to make 3d games that look like they were made in the
 - 3d sound with volume, falloff, and loop control
 
 
-TO DO:
+## TO DO:
 - Add decals
 - Add some sort of particle system
 - Add editor with ImGui
