@@ -26,7 +26,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(SW, SH, "Game Engine", NULL, NULL);
+    window = glfwCreateWindow(SW, SH, "Game Engine", moniter, NULL);
     if (!window)
     {
         std::cout << "Failed to create GLFW window\n";
