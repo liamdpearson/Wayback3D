@@ -13,13 +13,15 @@ A simple game engine meant to make 3d games that look like they were made way ba
 - Armature and animation support from fbx files
 - Bone parenting support for children of rigged objects
 - Scripting with Lua
+- 2d sound with volume and loop control
+- 3d sound with volume, falloff, and loop control
 
 
 TO DO:
-- Add sound with miniaudio
 - Add decals
 - Add some sort of particle system
 - Add editor with ImGui
+
 
 ## How to run yourself
 ### Windows
