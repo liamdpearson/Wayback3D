@@ -53,7 +53,12 @@ function update(deltaTime)
     if input.keyHeld(key.LSHIFT) then
         acceleration = acceleration * 1.5
     end
-    if input.keyPressed(key.SPACE) and self.grounded then
+
+    pos = self.transform:pos()
+    pos.y = pos.y + 0.1
+    down = Vec3.new(0, -1, 0)
+    grounded = raycast.occluded(pos, down, 0.2)
+    if input.keyPressed(key.SPACE) and grounded then
         self.velocity.y = self.velocity.y + 5.0
     end
 
@@ -100,5 +105,4 @@ function update(deltaTime)
     if camnhands.rig.currentAnim ~= shouldBe then
         camnhands.rig:setAnim(shouldBe, 0.1)
     end
-
 end

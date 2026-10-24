@@ -119,7 +119,8 @@ static void registerLuaAPI()
         "roll", &Transform::roll,
         "scaleX", &Transform::scaleX,
         "scaleY", &Transform::scaleY,
-        "scaleZ", &Transform::scaleZ
+        "scaleZ", &Transform::scaleZ,
+        "pos", [](Transform* t) { return glm::vec3{t->x, t->y, t->z}; }
     );
     lua.new_usertype<Rig>("Rig",
         "currentAnim", &Rig::currentAnim,
@@ -168,7 +169,6 @@ static void registerLuaAPI()
         "height", &Capsule::height,
         "radius", &Capsule::radius,
         "velocity", &Capsule::velocity,
-        "grounded", &Capsule::grounded,
         "resolveCollisions", [](Capsule* cap, float deltaTime) { resolveCollisions(cap, deltaTime); },
         sol::base_classes, sol::bases<Object>()
     );
@@ -209,6 +209,10 @@ static void registerLuaAPI()
     find.set_function("ui", [](const std::string& name) {
         UIElement* ui = findUIElement(name, uiRoots);
         return uiToLua(ui);
+    });
+    sol::table raycast = lua.create_named_table("raycast");
+    raycast.set_function("occluded", [](const glm::vec3& origin, const glm::vec3& dir, float maxDist) {
+        return rayOccluded(origin, dir, maxDist, rootNode);
     });
     lua.set_function(
         "swapScene", [](const std::string& path) { pendingScene = path; }

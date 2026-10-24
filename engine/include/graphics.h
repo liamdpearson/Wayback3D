@@ -71,7 +71,10 @@ struct AABB
     }
 };
 
-struct TriAABB : Tri { AABB aabb; };
+struct TriAABB {
+    Tri tri;
+    AABB aabb;
+};
 
 // all vectors are of the same length bone owns each at its index
 struct Skeleton
@@ -323,26 +326,6 @@ class Camera : public Object
         void setUp(const glm::vec3& u) { this->up = u; }
 
         ~Camera() = default;
-};
-
-class Capsule : public Object
-{
-     public:
-        float height = 1.8f; // capsule height
-        float radius = 0.3f; // capsule width
-        glm::vec3 velocity{0.0f};
-        bool grounded = false;
-
-        Capsule() = default;
-        void Compose() override;
-
-        Capsule(const Transform t,
-               const float height, const float radius)
-        : height(height), radius(radius) {
-            transform = t;
-        }
-
-        ~Capsule() = default;
 };
 
 // define scene variables

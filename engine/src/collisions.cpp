@@ -61,7 +61,6 @@ static const float GROUND_NORMAL_Y = 0.7f;
 static void resolveCapsuleCollision(Capsule* capsule, const std::vector<TriAABB>& colliders)
 {
     const float radiusSq = capsule->radius * capsule->radius;
-    capsule->grounded = false;
     // adjust multiple times per frame so if an adjustment pushes capsule into a
     // wall or something then it will fix itself before the player sees anything.
     for (int i = 0; i < 4; ++i)
@@ -79,7 +78,7 @@ static void resolveCapsuleCollision(Capsule* capsule, const std::vector<TriAABB>
         {
             if (!capsuleBox.overlaps(t.aabb)) continue;
 
-            glm::vec3 rawNormal = glm::cross(t.b - t.a, t.c - t.a);
+            glm::vec3 rawNormal = glm::cross(t.tri.b - t.tri.a, t.tri.c - t.tri.a);
             float normalLenSq = glm::dot(rawNormal, rawNormal);
             if (normalLenSq < 1e-12f) continue; // degenerate tri
             
@@ -99,18 +98,18 @@ static void resolveCapsuleCollision(Capsule* capsule, const std::vector<TriAABB>
 
             glm::vec3 reference;
             if (glm::abs(denom) < 1e-6f)
-                reference = t.a; // axis parallel : any point serves
+                reference = t.tri.a; // axis parallel : any point serves
             else
                 // gets closest point on segment to triangles plane
-                reference = base + axis * glm::clamp(glm::dot(faceNormal, t.a-base) / denom,
+                reference = base + axis * glm::clamp(glm::dot(faceNormal, t.tri.a-base) / denom,
                                                      0.0f, 1.0f);
                 
-            reference = closestPointOnTriangle(reference, t);
+            reference = closestPointOnTriangle(reference, t.tri);
 
             // center is the closest point on the segment.
             glm::vec3 center = closestPointOnSegment(reference, base, tip);
             // contact is the closest point to center on the tri.
-            glm::vec3 contact = closestPointOnTriangle(center, t);
+            glm::vec3 contact = closestPointOnTriangle(center, t.tri);
 
             glm::vec3 delta = center - contact;
             float distSq = glm::dot(delta, delta);
@@ -133,7 +132,6 @@ static void resolveCapsuleCollision(Capsule* capsule, const std::vector<TriAABB>
             capsule->transform.y += pushDir.y * depth;
 
             if (pushDir.y > GROUND_NORMAL_Y) {
-                capsule->grounded = true;
                 // only cancel the component of motion heading straight down into the surface
                 capsule->velocity.y -= pushDir.y * glm::min(0.0f, capsule->velocity.y * pushDir.y);
             } else {
@@ -157,19 +155,14 @@ void resolveCollisions(Capsule* cap, float deltaTime)
     glm::vec3 step = cap->velocity * deltaTime;
     int substeps = glm::max(1, (int)glm::ceil(glm::length(step) / (cap->radius * 0.5f)));
 
-    bool groundedAny = false;
-
     for (int i = 0; i < substeps; ++i)
     {
         cap->transform.x += step.x / substeps;
         cap->transform.y += step.y / substeps;
         cap->transform.z += step.z / substeps;
 
-            resolveCapsuleCollision(cap, colliders);
-
-        if (cap->grounded) groundedAny = true;
+        resolveCapsuleCollision(cap, colliders);
     }
-    cap->grounded = groundedAny;
 }
 
 void Object::CollectColliders(const glm::mat4 parentWorld, std::vector<TriAABB>& out)
@@ -203,8 +196,9 @@ void StaticMesh::CollectColliders(const glm::mat4 parentWorld, std::vector<TriAA
                 glm::vec3 local(vertices[v], vertices[v + 1], vertices[v + 2]);
                 corner[c] = glm::vec3(w * glm::vec4(local, 1.0f));
             }
-            TriAABB t{corner[0], corner[1], corner[2]};
-            t.aabb = triBounds(Tri{t.a, t.b, t.c});
+            Tri tri{corner[0], corner[1], corner[2]};
+            AABB aabb = triBounds(tri);
+            TriAABB t{tri, aabb};
             out.push_back(t);
         }
     }
@@ -214,6 +208,33 @@ void collectSceneColliders()
 {
     colliders.clear();
     for (std::unique_ptr<Object>& obj : rootObjs) obj->CollectColliders(glm::mat4(1.0f), colliders);
+
+    std::vector<Tri*> colliderRefs;
+    for (TriAABB& t : colliders)
+        colliderRefs.push_back(&(t.tri));
+
+    glm::vec3 min{-INFINITY, -INFINITY, -INFINITY};
+    glm::vec3 max{INFINITY, INFINITY, INFINITY};
+
+    for (const TriAABB& tbb : colliders) {
+
+        std::vector<glm::vec3> verts{tbb.tri.a, tbb.tri.b, tbb.tri.c};
+        for (const glm::vec3& v : verts)
+        {
+            min.x = std::min(min.x, v.x); max.x = std::max(max.x, v.x);
+            min.y = std::min(min.y, v.y); max.y = std::max(max.y, v.y);
+            min.z = std::min(min.z, v.z); max.z = std::max(max.z, v.z);
+        }
+    }
+
+
+    rootNode = BVHnode{
+        AABB{min, max},
+        nullptr, nullptr,
+        colliderRefs,
+        false
+    };
+    splitBVHnode(&rootNode);
 }
 
 void Capsule::Compose()
