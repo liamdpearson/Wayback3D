@@ -16,7 +16,7 @@ A simple game engine meant to make 3d games that look like they were made in the
 - 2d sound with volume and loop control
 - 3d sound with volume, falloff, and loop control
 
-'''
+'''text
 my-project/
 ├── docs/
 │   ├── index.md
