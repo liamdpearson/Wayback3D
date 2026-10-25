@@ -1,5 +1,5 @@
 # Wayback3D
-A simple game engine meant to make 3d games that look like they were made in the 90s.
+A simple game engine meant to make 3d games that look like they were made in the 90s. This project is still in its early stages of development. I doubt it will ever be finished. It is mainly just for fun because I like the look of old school graphics.
 
 
 ## Current features:
@@ -16,6 +16,7 @@ A simple game engine meant to make 3d games that look like they were made in the
 - 2d sound with volume and loop control
 - 3d sound with volume, falloff, and loop control
 
+## Code Structure
 ```text
 engine/
 ├── include/
