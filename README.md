@@ -16,16 +16,33 @@ A simple game engine meant to make 3d games that look like they were made in the
 - 2d sound with volume and loop control
 - 3d sound with volume, falloff, and loop control
 
-'''text
-my-project/
-├── docs/
-│   ├── index.md
-│   └── guide.md
+```text
+engine/
+├── include/
+│   ├── audio.h
+│   ├── collisions.h
+│   ├── graphics.h
+│   ├── input.h
+│   ├── lighting.h
+│   ├── load.h
+│   ├── raycast.h
+│   ├── scenes.h
+│   ├── scripts.h
+│   └── ui.h
 ├── src/
-│   └── app.py
-├── README.md
-└── package.json
-'''
+│   ├── audio.cpp
+│   ├── collisions.cpp
+│   ├── graphics.cpp
+│   ├── input.cpp
+│   ├── lighting.cpp
+│   ├── load.cpp
+│   ├── raycast.cpp
+│   ├── scenes.cpp
+│   ├── scripts.cpp
+│   ├── scripts_internal.h
+│   └── ui.cpp
+└── main.cpp
+```
 
 
 ## TO DO:
