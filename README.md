@@ -16,6 +16,17 @@ A simple game engine meant to make 3d games that look like they were made in the
 - 2d sound with volume and loop control
 - 3d sound with volume, falloff, and loop control
 
+'''
+my-project/
+├── docs/
+│   ├── index.md
+│   └── guide.md
+├── src/
+│   └── app.py
+├── README.md
+└── package.json
+'''
+
 
 ## TO DO:
 - Add decals
@@ -23,7 +34,7 @@ A simple game engine meant to make 3d games that look like they were made in the
 - Add editor with ImGui
 
 
-## How to run yourself
+## How to run test scene yourself
 ### Windows
 Prerequisites: MinGW/GCC, git, and CMake 3.16 or newer
 Make sure gcc, g++, and mingw32-make are on your path.
