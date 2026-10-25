@@ -25,9 +25,10 @@ A simple game engine meant to make 3d games that look like they were made in the
 
 ## How to run yourself
 ### Windows
-Prerequisites: MinGW/GCC and CMake 3.16 or newer
+Prerequisites: MinGW/GCC, git, and CMake 3.16 or newer
 Make sure gcc, g++, and mingw32-make are on your path.
-1. Clone the repo
-2. cmake -S . -B build -G "MinGW Makefiles"
-3. cmake --build build
-4. ./release
+1. git clone https://github.com/liamdpearson/Wayback3D
+2. cd Wayback3D
+3. cmake -S . -B build -G "MinGW Makefiles"
+4. cmake --build build
+5. ./release
