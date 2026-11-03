@@ -3,6 +3,13 @@ A simple game engine meant to make 3d games that look like they were made in the
   
 This project is still in its early stages of development. I doubt it will ever be finished. It is mainly just for fun because I like the look of old school graphics.
 
+<p align="left">
+  <img src="img/img1.png" width="1000">
+</p>
+
+<p align="left">
+  <img src="img/img2.png" width="1000">
+</p>
 
 ## Current features:
 - Object hierarchy with types: Object, Mesh, Camera, Capsule, StaticMesh, AnimatedMesh, and AnimatedObj
