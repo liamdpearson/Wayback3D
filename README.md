@@ -1,5 +1,8 @@
 # Wayback3D - ABANDONED
-## Rewrite here: https://github.com/liamdpearson/AuricEngine
+
+Engine rewrite here: https://github.com/liamdpearson/AuricEngine
+
+
 A simple game engine meant to make 3d games that look like they were made in the 90s.  
   
 This project is still in its early stages of development. I doubt it will ever be finished. It is mainly just for fun because I like the look of old school graphics.
